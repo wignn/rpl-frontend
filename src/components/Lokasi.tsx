@@ -38,7 +38,7 @@ export default function Lokasi() {
             </div>
             <div className="overflow-hidden rounded-lg border border-green-100">
               <Image
-                src="/placeholder.svg?height=400&width=600"
+                src="/about.jpg?height=400&width=600"
                 alt="Peta Lokasi"
                 width={600}
                 height={400}
