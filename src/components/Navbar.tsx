@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Menu, X, Home, Info, Phone, MapPin, Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// Mock data for navigation items
 const navigationItems = [
   { name: "Beranda", href: "#beranda", icon: Home },
   { name: "Tentang", href: "#tentang", icon: Info },
@@ -20,7 +19,6 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [activeItem, setActiveItem] = useState("beranda")
 
-  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10)
@@ -30,7 +28,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden"
@@ -107,7 +104,7 @@ export default function Navbar() {
           <div className="flex flex-col h-2/3 pt-16 pb-6 px-4">
             <nav className="flex-1 overflow-y-auto py-8">
               <ul className="space-y-4">
-                {navigationItems.map((item, index) => {
+                {navigationItems.map((item, _index) => {
                   const Icon = item.icon
                   const isActive = activeItem === item.href.replace("#", "")
 
