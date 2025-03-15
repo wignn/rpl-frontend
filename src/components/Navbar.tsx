@@ -104,7 +104,7 @@ export default function Navbar() {
           <div className="flex flex-col h-2/3 pt-16 pb-6 px-4">
             <nav className="flex-1 overflow-y-auto py-8">
               <ul className="space-y-4">
-                {navigationItems.map((item, _index) => {
+                {navigationItems.map((item) => {
                   const Icon = item.icon
                   const isActive = activeItem === item.href.replace("#", "")
 
