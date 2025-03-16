@@ -10,7 +10,7 @@ export default function Hero() {
       <div className="container mx-auto max-w-7xl px-4 md:px-6">
         <div className="grid gap-8 lg:grid-cols-2 items-center">
           <div className="flex flex-col gap-4 text-center lg:text-left">
-            <Badge className="w-fit mx-auto lg:mx-0 bg-green-100 text-green-800 hover:bg-green-100">
+            <Badge className="w-fit mx-auto lg:mx-0 bg-green-100 text-lg px-3 py-1 text-green-800 hover:bg-green-100">
               Hunian Nyaman & Strategis
             </Badge>
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
