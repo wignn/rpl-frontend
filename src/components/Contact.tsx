@@ -10,7 +10,7 @@ export default function Contact() {
       <div className="container mx-auto max-w-7xl px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="space-y-2">
-            <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Kontak</Badge>
+            <Badge className="bg-green-100 text-lg px-3 py-1 text-green-800 hover:bg-green-100">Kontak</Badge>
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Hubungi Kami</h2>
             <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
               Tertarik dengan GreenKost? Hubungi kami untuk informasi lebih lanjut atau jadwalkan kunjungan

@@ -15,13 +15,13 @@ export default function Cta() {
         </div>
         <div className="flex flex-col gap-2 min-[400px]:flex-row">
           <Button className="bg-white text-green-800 hover:bg-gray-100">Pesan Sekarang</Button>
-          <Button variant="outline" className="border-white text-white hover:bg-green-700">
+          <Button className="bg-white text-green-800 hover:bg-gray-100">
             Jadwalkan Kunjungan
           </Button>
         </div>
       </div>
     </div>
-  </section>
+  </section> 
   )
 }
 
