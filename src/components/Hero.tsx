@@ -29,7 +29,7 @@ export default function Hero() {
           </div>
           <div className="flex justify-center lg:justify-end">
             <Image
-              src="/havoc-rover.webp?height=550&width=550"
+              src="/kontrak.jpg?height=550&width=550"
               alt="Kost Modern"
               width={550}
               height={550}
