@@ -1,145 +1,193 @@
-import { Wifi, ShowerHead, Utensils, Tv, Lock, MapPin, Phone, Mail } from "lucide-react"
-
-// Navigation items
-export const navigationItems = ["Beranda", "Kamar", "Fasilitas", "Lokasi", "Testimoni", "Kontak"]
-
-// Features data
-export const featuresData = [
+export const roomTypes = [
   {
-    icon: Wifi,
-    title: "WiFi Cepat",
-    description: "Koneksi internet stabil dan cepat untuk kebutuhan belajar dan bekerja",
-  },
-  {
-    icon: ShowerHead,
-    title: "Kamar Mandi Dalam",
-    description: "Privasi terjaga dengan kamar mandi dalam di setiap kamar",
-  },
-  {
-    icon: Utensils,
-    title: "Dapur Bersama",
-    description: "Dapur bersama yang bersih dan lengkap untuk memasak",
-  },
-  {
-    icon: Tv,
-    title: "Ruang Komunal",
-    description: "Ruang bersama untuk bersantai dan bersosialisasi",
-  },
-  {
-    icon: Lock,
-    title: "Keamanan 24 Jam",
-    description: "Sistem keamanan dan CCTV 24 jam untuk ketenangan Anda",
-  },
-  {
-    icon: MapPin,
-    title: "Lokasi Strategis",
-    description: "Dekat dengan kampus, pusat perbelanjaan, dan transportasi umum",
-  },
-]
-
-// Rooms data
-export const roomsData = [
-  {
-    title: "Kamar Standard",
-    price: "Rp 800.000",
-    description: "Kamar nyaman dengan fasilitas dasar untuk kebutuhan sehari-hari",
-    features: ["Ukuran 3x3 meter", "Kasur single", "Lemari pakaian", "Meja belajar", "Kamar mandi dalam"],
-    popular: false,
-  },
-  {
-    title: "Kamar Premium",
-    price: "Rp 1.200.000",
-    description: "Kamar lebih luas dengan fasilitas tambahan untuk kenyamanan ekstra",
-    features: ["Ukuran 4x3 meter", "Kasur queen size", "Lemari besar", "Meja belajar", "Kamar mandi dalam", "AC"],
-    popular: true,
-  },
-  {
-    title: "Kamar Deluxe",
-    price: "Rp 1.500.000",
-    description: "Kamar terluas dengan fasilitas lengkap untuk pengalaman tinggal terbaik",
+    id: 1,
+    type: "A",
+    description: "Kamar dengan fasilitas lengkap dan nyaman",
+    price: "Rp 1.500.000/bulan",
     features: [
-      "Ukuran 4x4 meter",
-      "Kasur queen size",
-      "Walk-in closet",
+      "Ukuran kamar 3x4 meter",
+      "Kamar mandi luar",
+      "Kasur single",
+      "Lemari pakaian",
       "Meja belajar",
-      "Kamar mandi dalam",
+      "WiFi gratis",
       "AC",
-      "TV",
     ],
-    popular: false,
+    availability: 3,
+  },
+  {
+    id: 2,
+    type: "B",
+    description: "Kamar dengan balkon dan pemandangan indah",
+    price: "Rp 1.750.000/bulan",
+    features: [
+      "Ukuran kamar 3x4 meter",
+      "Kamar mandi luar",
+      "Kasur single",
+      "Lemari pakaian",
+      "Meja belajar",
+      "WiFi gratis",
+      "AC",
+      "Balkon pribadi",
+    ],
+    availability: 2,
+  },
+  {
+    id: 3,
+    type: "C",
+    description: "Kamar luas dengan kamar mandi dalam",
+    price: "Rp 2.000.000/bulan",
+    features: [
+      "Ukuran kamar 4x4 meter",
+      "Kamar mandi dalam",
+      "Kasur single",
+      "Lemari pakaian besar",
+      "Meja belajar",
+      "WiFi gratis",
+      "AC",
+    ],
+    availability: 5,
+  },
+  {
+    id: 4,
+    type: "D",
+    description: "Kamar premium dengan fasilitas ekstra",
+    price: "Rp 2.250.000/bulan",
+    features: [
+      "Ukuran kamar 4x5 meter",
+      "Kamar mandi dalam",
+      "Kasur queen size",
+      "Lemari pakaian besar",
+      "Meja belajar",
+      "WiFi gratis",
+      "AC",
+      "TV LED 32 inch",
+    ],
+    availability: 1,
+  },
+  {
+    id: 5,
+    type: "E",
+    description: "Kamar executive dengan ruang tamu terpisah",
+    price: "Rp 2.500.000/bulan",
+    features: [
+      "Ukuran kamar 5x6 meter",
+      "Kamar mandi dalam",
+      "Kasur queen size",
+      "Lemari pakaian besar",
+      "Meja belajar",
+      "WiFi gratis",
+      "AC",
+      "TV LED 40 inch",
+      "Ruang tamu kecil",
+      "Kulkas mini",
+    ],
+    availability: 0,
   },
 ]
 
-// Testimonials data
-export const testimonialsData = [
+export interface TenantData {
+  id: number;
+  name: string;
+  date: string;
+  status: string;
+}
+
+
+export const tenantData: TenantData[] = [
   {
-    name: "Budi Santoso",
-    role: "Mahasiswa",
-    content:
-      "Saya sudah tinggal di GreenKost selama 2 tahun dan sangat puas. Fasilitas lengkap, lokasi strategis, dan pengelola yang ramah membuat saya betah tinggal di sini.",
-    rating: 5,
+    id: 1,
+    name: "hanni",
+    date: "20/12/2023",
+    status: "menunggu konfirmasi",
   },
   {
-    name: "Ani Wijaya",
-    role: "Karyawan Swasta",
-    content:
-      "GreenKost menjadi pilihan tepat untuk saya yang bekerja di pusat kota. Akses transportasi mudah dan fasilitas WiFi yang cepat sangat membantu pekerjaan saya.",
-    rating: 5,
+    id: 2,
+    name: "lia",
+    date: "20/12/2023",
+    status: "selesai",
   },
   {
-    name: "Dedi Pratama",
-    role: "Freelancer",
-    content:
-      "Suasana yang tenang dan nyaman membuat saya produktif bekerja dari kamar. Dapur bersama juga sangat membantu untuk menghemat biaya makan di luar.",
-    rating: 4,
+    id: 3,
+    name: "ica",
+    date: "16/11/2023",
+    status: "menunggu spare part",
+  },
+  {
+    id: 4,
+    name: "fajry",
+    date: "20/12/2023",
+    status: "selesai",
+  },
+  {
+    id: 5,
+    name: "nada",
+    date: "20/12/2023",
+    status: "ditolak",
+  },
+  {
+    id: 6,
+    name: "gojo",
+    date: "20/12/2023",
+    status: "selesai",
+  },
+  {
+    id: 7,
+    name: "durin",
+    date: "1/12/2023",
+    status: "ditolak",
+  },
+  {
+    id: 8,
+    name: "macan",
+    date: "20/12/2023",
+    status: "selesai",
+  },
+  {
+    id: 9,
+    name: "nulela",
+    date: "20/12/2023",
+    status: "ditolak",
+  },
+  {
+    id: 10,
+    name: "garam dan medu",
+    date: "20/12/2023",
+    status: "selesai",
   },
 ]
 
-// Location data
-export const nearbyPlacesData = [
-  { name: "Universitas Indonesia", distance: "500 meter (5 menit jalan kaki)" },
-  { name: "Halte Transjakarta", distance: "300 meter (3 menit jalan kaki)" },
-  { name: "Mall Depok Town Square", distance: "1 km (5 menit dengan transportasi)" },
-  { name: "Rumah Sakit UI", distance: "800 meter (8 menit jalan kaki)" },
-  { name: "Minimarket", distance: "50 meter (1 menit jalan kaki)" },
+export const allTenantData: TenantData[] = [
+  ...tenantData,
+  { id: 11, name: "ahmad", date: "22/12/2023", status: "menunggu konfirmasi" },
+  { id: 12, name: "budi", date: "22/12/2023", status: "selesai" },
+  { id: 13, name: "citra", date: "23/12/2023", status: "ditolak" },
+  { id: 14, name: "deni", date: "23/12/2023", status: "menunggu spare part" },
+  { id: 15, name: "eko", date: "24/12/2023", status: "selesai" },
+  { id: 16, name: "fina", date: "24/12/2023", status: "menunggu konfirmasi" },
+  { id: 17, name: "gita", date: "25/12/2023", status: "selesai" },
+  { id: 18, name: "hadi", date: "25/12/2023", status: "ditolak" },
+  { id: 19, name: "indra", date: "26/12/2023", status: "selesai" },
+  { id: 20, name: "joko", date: "26/12/2023", status: "menunggu spare part" },
+  { id: 21, name: "kiki", date: "27/12/2023", status: "selesai" },
+  { id: 22, name: "lina", date: "27/12/2023", status: "ditolak" },
+  { id: 23, name: "mira", date: "28/12/2023", status: "menunggu konfirmasi" },
+  { id: 24, name: "nana", date: "28/12/2023", status: "selesai" },
+  { id: 25, name: "oki", date: "29/12/2023", status: "ditolak" },
 ]
-
-// Contact data
-export const contactData = [
-  {
-    icon: Phone,
-    title: "Telepon/WhatsApp",
-    content: "+62 812-3456-7890",
-  },
-  {
-    icon: Mail,
-    title: "Email",
-    content: "info@greenkost.com",
-  },
-  {
-    icon: MapPin,
-    title: "Alamat",
-    content: "Jl. Margonda Raya No. 123, Depok, Jawa Barat",
-  },
+export const months = [
+  "januari",
+  "februari",
+  "maret",
+  "april",
+  "mei",
+  "juni",
+  "juli",
+  "agustus",
+  "september",
+  "oktober",
+  "november",
+  "desember",
 ]
-
-// Business hours
-export const businessHours = ["Senin - Jumat: 08.00 - 20.00", "Sabtu: 09.00 - 18.00", "Minggu: 09.00 - 16.00"]
-
-// Recent payments data
-export const paymentsData = [
-  { tenant: "Budi Santoso", room: "101", amount: "Rp 800.000", date: "15 Jun 2023", status: "success" },
-  { tenant: "Ani Wijaya", room: "102", amount: "Rp 800.000", date: "14 Jun 2023", status: "success" },
-  { tenant: "Maya Lestari", room: "201", amount: "Rp 850.000", date: "13 Jun 2023", status: "success" },
-  { tenant: "Rudi Hartono", room: "202", amount: "Rp 850.000", date: "12 Jun 2023", status: "success" },
-  { tenant: "Dewi Sartika", room: "206", amount: "Rp 850.000", date: "10 Jun 2023", status: "success" },
-]
-
-// Upcoming payments data
-export const upcomingPaymentsData = [
-  { tenant: "Joko Susilo", room: "106", amount: "Rp 800.000", dueDate: "25 Jun 2023", status: "soon" },
-  { tenant: "Sinta Dewi", room: "203", amount: "Rp 850.000", dueDate: "26 Jun 2023", status: "soon" },
-  { tenant: "Tono Wijaya", room: "205", amount: "Rp 850.000", dueDate: "28 Jun 2023", status: "soon" },
-  { tenant: "Rina Tari", room: "105", amount: "Rp 800.000", dueDate: "30 Jun 2023", status: "soon" },
-]
+export const statusTypes = ["PENDING", "COMPLETED"]
 
