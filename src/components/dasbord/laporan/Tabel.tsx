@@ -47,11 +47,10 @@ export default function Table({ data, currentPage, totalPages, month }: Props) {
   }
 
   const handleStatusUpdated = () => {
-    // Force a complete refresh of the data
+
     router.refresh()
 
-    // For immediate UI feedback, you could also update the local state
-    // This provides a smoother UX while the server refetches data
+
     setEditingReport(null)
   }
 
