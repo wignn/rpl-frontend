@@ -7,7 +7,6 @@ import { formatDate } from "@/lib/utils/dateNormalize"
 import { EditStatusModal } from "./edit-modal-status"
 
 interface ReportTableProps extends PaginatedReportResponse {
-  month: string
   onPageChange: (page: number) => void
   accessToken: string
 }
@@ -16,7 +15,6 @@ export default function ReportTable({
   data,
   currentPage,
   totalPages,
-  month,
   onPageChange,
   accessToken,
 }: ReportTableProps) {

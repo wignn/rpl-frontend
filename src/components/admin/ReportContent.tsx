@@ -7,6 +7,7 @@ import ReportFilter from "@/components/dasbord/laporan/Filter"
 import ReportTable from "@/components/dasbord/laporan/Tabel"
 import ReportSkeleton from "@/components/sekleton/report"
 
+
 interface ReportContentProps {
   accessToken: string
 }
@@ -17,14 +18,28 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
   const [reportData, setReportData] = useState<PaginatedReportResponse | null>(null)
   const [page, setPage] = useState(1)
   const [month, setMonth] = useState(new Date().toLocaleString("default", { month: "long" }))
+  const [searchQuery, setSearchQuery] = useState("")
   const limit = 5
 
   const fetchReportData = async () => {
     setIsLoading(true)
     setError(null)
     try {
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+        _t: Date.now().toString(),
+      })
+      if (month.toLowerCase() !== "semua") {
+        queryParams.append("month", month.toLowerCase())
+      }
+
+      if (searchQuery) {
+        queryParams.append("search", searchQuery)
+      }
+
       const result = await apiRequest<PaginatedReportResponse>({
-        endpoint: `/report?page=${page}&limit=${limit}&month=${month.toLowerCase()}&_t=${Date.now()}`,
+        endpoint: `/report?${queryParams.toString()}`,
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -41,7 +56,7 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
 
   useEffect(() => {
     fetchReportData()
-  }, [page, month, accessToken])
+  }, [page, month, searchQuery, accessToken])
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage)
@@ -49,7 +64,12 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
 
   const handleMonthChange = (newMonth: string) => {
     setMonth(newMonth)
-    setPage(1) // Reset to first page when changing month
+    setPage(1)
+  }
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    setPage(1) 
   }
 
   if (isLoading) {
@@ -77,14 +97,18 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">Laporan</h2>
 
-      <ReportFilter currentMonth={month} onMonthChange={handleMonthChange} />
+      <ReportFilter
+        currentMonth={month}
+        onMonthChange={handleMonthChange}
+        onSearch={handleSearch}
+        searchQuery={searchQuery}
+      />
 
       {reportData && (
         <ReportTable
           data={reportData.data}
           currentPage={reportData.currentPage}
           totalPages={reportData.totalPages}
-          month={month}
           totalItems={reportData.totalItems}
           onPageChange={handlePageChange}
           accessToken={accessToken}
