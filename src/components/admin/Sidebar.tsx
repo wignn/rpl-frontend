@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Home, Users, FileText, Settings, Menu, X } from "lucide-react"
+import { Home, Users, BarChart2, Settings, Menu, X, Bed, DoorClosed, Receipt } from "lucide-react"
 
 interface SidebarProps {
   activeTab: string
@@ -68,7 +68,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
       </div>
 
       {isMobile && isMobileOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" />}
-   <div
+      <div
         className={`sidebar-content fixed md:static inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
           isMobile ? (isMobileOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"
         } md:translate-x-0`}
@@ -76,7 +76,11 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         <div className="p-4 border-b flex items-center justify-between">
           <h1 className="text-xl font-bold text-green-600">Nama Kost Admin</h1>
           {isMobile && (
-            <button title="x" onClick={() => setIsMobileOpen(false)} className="p-1 rounded-full hover:bg-gray-100 md:hidden">
+            <button
+              title="x"
+              onClick={() => setIsMobileOpen(false)}
+              className="p-1 rounded-full hover:bg-gray-100 md:hidden"
+            >
               <X className="w-5 h-5 text-gray-500" />
             </button>
           )}
@@ -102,7 +106,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
                   activeTab === "rooms" ? "bg-green-500 text-white" : "text-gray-700 hover:bg-green-100"
                 }`}
               >
-                <FileText className="w-5 h-5 mr-3" />
+                <Bed className="w-5 h-5 mr-3" />
                 <span>Tipe Kamar</span>
               </button>
             </li>
@@ -119,12 +123,23 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             </li>
             <li>
               <button
+                onClick={() => handleMenuItemClick("reports")}
+                className={`flex items-center w-full p-3 rounded-lg text-left ${
+                  activeTab === "facilities" ? "bg-green-500 text-white" : "text-gray-700 hover:bg-green-100"
+                }`}
+              >
+                <BarChart2 className="w-5 h-5 mr-3" />
+                <span>Report</span>
+              </button>
+            </li>
+            <li>
+              <button
                 onClick={() => handleMenuItemClick("roomList")}
                 className={`flex items-center w-full p-3 rounded-lg text-left ${
                   activeTab === "roomList" ? "bg-green-500 text-white" : "text-gray-700 hover:bg-green-100"
                 }`}
               >
-                <FileText className="w-5 h-5 mr-3" />
+                <DoorClosed className="w-5 h-5 mr-3" />
                 <span>Daftar Kamar</span>
               </button>
             </li>
@@ -135,7 +150,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
                   activeTab === "transactions" ? "bg-green-500 text-white" : "text-gray-700 hover:bg-green-100"
                 }`}
               >
-                <FileText className="w-5 h-5 mr-3" />
+                <Receipt className="w-5 h-5 mr-3" />
                 <span>Transaksi</span>
               </button>
             </li>
@@ -156,4 +171,3 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     </>
   )
 }
-

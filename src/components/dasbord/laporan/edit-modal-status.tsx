@@ -11,10 +11,18 @@ interface EditStatusModalProps {
   reportId: string
   currentStatus: string
   onStatusUpdated: () => void
+  accessToken: string
 }
 
-export function EditStatusModal({ isOpen, onClose, reportId, currentStatus, onStatusUpdated }: EditStatusModalProps) {
-  const [status, setStatus] = useState(currentStatus)
+export function EditStatusModal({
+  isOpen,
+  onClose,
+  reportId,
+  currentStatus,
+  onStatusUpdated,
+  accessToken,
+}: EditStatusModalProps) {
+  const [status, setStatus] = useState(currentStatus.toLowerCase())
   const [isSubmitting, setIsSubmitting] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
 
@@ -56,33 +64,18 @@ export function EditStatusModal({ isOpen, onClose, reportId, currentStatus, onSt
     try {
       setIsSubmitting(true)
 
-      // Create a FormData object to pass to the server action
-      const formData = new FormData()
-      formData.append("reportId", reportId)
-      formData.append("status", status)
+      // Call the API to update the status
+      await apiRequest<ReportUpdateRequest>({
+        endpoint: `/report/${reportId}`,
+        method: "PUT",
+        body: { status: status.toUpperCase() },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
 
-      // Call the server action
-      const updateAction = async () => {
-        try {
-          const reportId = formData.get("reportId") as string
-          const status = (formData.get("status") as string).toUpperCase()
-
-          const res = await apiRequest<ReportUpdateRequest>({
-            endpoint: `/report/${reportId}`,
-            method: "PUT",
-            body: { status },
-          })
-
-          // Call the callback to notify parent component
-          onStatusUpdated()
-          return res
-        } catch (error) {
-          console.error("Error updating report status:", error)
-          throw error
-        }
-      }
-
-      await updateAction()
+      // Call the callback to notify parent component
+      onStatusUpdated()
       onClose()
     } catch (error) {
       console.error("Failed to update status:", error)
@@ -110,7 +103,7 @@ export function EditStatusModal({ isOpen, onClose, reportId, currentStatus, onSt
               id="status-select"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="pending">Pending</option>
               <option value="completed">Completed</option>
@@ -124,7 +117,7 @@ export function EditStatusModal({ isOpen, onClose, reportId, currentStatus, onSt
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
           >
             <X className="mr-2 h-4 w-4" />
             Cancel
@@ -134,7 +127,7 @@ export function EditStatusModal({ isOpen, onClose, reportId, currentStatus, onSt
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="inline-flex items-center justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
           >
             {isSubmitting ? (
               <span className="flex items-center">
@@ -168,4 +161,3 @@ export function EditStatusModal({ isOpen, onClose, reportId, currentStatus, onSt
     </div>
   )
 }
-
