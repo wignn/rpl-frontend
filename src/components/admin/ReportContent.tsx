@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { apiRequest } from "@/lib/api"
 import type { PaginatedReportResponse } from "@/types/report"
 import ReportFilter from "@/components/dasbord/laporan/Filter"
@@ -20,8 +20,7 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
   const [month, setMonth] = useState(new Date().toLocaleString("default", { month: "long" }))
   const [searchQuery, setSearchQuery] = useState("")
   const limit = 5
-
-  const fetchReportData = async () => {
+  const fetchReportData = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
@@ -33,11 +32,11 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
       if (month.toLowerCase() !== "semua") {
         queryParams.append("month", month.toLowerCase())
       }
-
+  
       if (searchQuery) {
         queryParams.append("search", searchQuery)
       }
-
+  
       const result = await apiRequest<PaginatedReportResponse>({
         endpoint: `/report?${queryParams.toString()}`,
         method: "GET",
@@ -52,7 +51,8 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [accessToken, month, page, searchQuery]) 
+  
 
   useEffect(() => {
     fetchReportData()

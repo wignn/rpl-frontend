@@ -1,12 +1,13 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
-import { X } from "lucide-react"
-import { apiRequest } from "@/lib/api"
+import { useState, useEffect, useRef } from "react"
+import { X, Upload, ImageIcon } from "lucide-react"
+import { apiRequest, fileRequest } from "@/lib/api"
 import type { RoomTypeResponse } from "@/types/room"
 import type { FacilityDetailResponse } from "@/types/facility"
 import AlertMessage from "@/components/alert/alertMessage"
+import Image from "next/image"
 
 interface RoomTypeModalProps {
   isOpen: boolean
@@ -16,7 +17,7 @@ interface RoomTypeModalProps {
   facilities: FacilityDetailResponse[]
 }
 
-export default function RoomTypeModal({ isOpen, onClose,facilities, onSuccess, roomType }: RoomTypeModalProps) {
+export default function RoomTypeModal({ isOpen, onClose, facilities, onSuccess, roomType }: RoomTypeModalProps) {
   const isUpdateMode = !!roomType
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
@@ -31,6 +32,12 @@ export default function RoomTypeModal({ isOpen, onClose,facilities, onSuccess, r
     isOpen: false,
   })
 
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   useEffect(() => {
     if (roomType) {
       setFormData({
@@ -38,11 +45,15 @@ export default function RoomTypeModal({ isOpen, onClose,facilities, onSuccess, r
         price: roomType.price ? `Rp ${Number(roomType.price).toLocaleString("id-ID")}` : "",
         facilities: roomType.facility?.map((f: { id_facility: string }) => f.id_facility) || [],
       })
+
+      if (roomType.image) {
+        setUploadedImageUrl(roomType.image)
+      }
     } else {
       resetForm()
     }
   }, [roomType, isOpen])
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
@@ -50,7 +61,6 @@ export default function RoomTypeModal({ isOpen, onClose,facilities, onSuccess, r
       [name]: value,
     }))
   }
-
 
   const handleFacilityChange = (facilityId: string) => {
     setFormData((prev) => {
@@ -77,17 +87,84 @@ export default function RoomTypeModal({ isOpen, onClose,facilities, onSuccess, r
     })
   }
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+
+      if (!file.type.startsWith("image/")) {
+        showAlert("error", "File harus berupa gambar (JPG, PNG, dll)")
+        return
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showAlert("error", "Ukuran gambar tidak boleh lebih dari 5MB")
+        return
+      }
+
+      setSelectedImage(file)
+
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const uploadImage = async () => {
+    if (!selectedImage) return null
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", selectedImage)
+console.log(process.env.API_KEY)
+
+      const response = await fileRequest<{ path: string }>({
+        endpoint: "files/upload",
+        method: "POST",
+        body: formData,
+        headers: {
+          "x-api-key": process.env.API_KEY as string,
+        },
+      })
+
+      if (!response) {
+        throw new Error("Upload failed")
+      }
+
+      setUploadedImageUrl(response.path) 
+      return response.path
+    } catch (error) {
+      console.error("Error uploading image:", error)
+      showAlert("error", "Gagal mengunggah gambar. Silakan coba lagi.")
+      return null
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
+      let imageUrl = uploadedImageUrl
+      if (selectedImage) {
+        imageUrl = await uploadImage()
+        console.log("Image URL:", imageUrl)
+        if (!imageUrl) {
+          setIsSubmitting(false)
+          return 
+        }
+      }
+
       const priceAsNumber = Number.parseFloat(formData.price.replace(/[^\d]/g, ""))
 
       const requestData = {
         room_type: formData.roomType,
         price: priceAsNumber,
         facilities: formData.facilities,
+        image: imageUrl,
       }
 
       let res
@@ -128,6 +205,12 @@ export default function RoomTypeModal({ isOpen, onClose,facilities, onSuccess, r
       price: "",
       facilities: [],
     })
+    setSelectedImage(null)
+    setPreviewUrl(null)
+    setUploadedImageUrl(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
   }
 
   const formatPrice = (value: string) => {
@@ -142,6 +225,12 @@ export default function RoomTypeModal({ isOpen, onClose,facilities, onSuccess, r
     const { value } = e.target
     const formattedValue = formatPrice(value)
     setFormData((prev) => ({ ...prev, price: formattedValue }))
+  }
+
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
+    }
   }
 
   if (!isOpen) return null
@@ -162,7 +251,6 @@ export default function RoomTypeModal({ isOpen, onClose,facilities, onSuccess, r
           <div className="p-6">
             <form onSubmit={handleSubmit}>
               <div className="space-y-6">
-                {/* Nama Tipe Kamar */}
                 <div className="space-y-2">
                   <label htmlFor="roomType" className="block text-sm font-medium text-gray-700">
                     Nama Tipe Kamar
@@ -195,7 +283,67 @@ export default function RoomTypeModal({ isOpen, onClose,facilities, onSuccess, r
                   />
                 </div>
 
-                {/* Fasilitas */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Foto Kamar</label>
+
+                  <div className="mt-1 flex flex-col items-center">
+                    <input
+                      title="Upload Gambar"
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
+
+                    {/* Image preview or placeholder */}
+                    <div
+                      className="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors mb-2"
+                      onClick={triggerFileInput}
+                    >
+                      {previewUrl ? (
+                        <Image
+                          width={500}
+                          height={500}
+                          src={previewUrl || "/placeholder.svg"}
+                          alt="Preview"
+                          className="h-full w-full object-cover rounded-lg"
+                        />
+                      ) : uploadedImageUrl ? (
+                        <Image
+                          width={500}
+                          height={500}
+                          src={uploadedImageUrl || "/placeholder.svg"}
+                          alt="Room Type"
+                          className="h-full w-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="text-center p-4">
+                          <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+                          <p className="mt-1 text-sm text-gray-500">Klik untuk mengunggah gambar</p>
+                          <p className="text-xs text-gray-400">JPG, PNG, GIF hingga 5MB</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={triggerFileInput}
+                      className="mt-2 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {previewUrl || uploadedImageUrl ? "Ganti Gambar" : "Unggah Gambar"}
+                    </button>
+
+                    {/* Selected file name */}
+                    {selectedImage && (
+                      <p className="mt-2 text-xs text-gray-500">
+                        {selectedImage.name} ({Math.round(selectedImage.size / 1024)} KB)
+                      </p>
+                    )}
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">Fasilitas</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -215,7 +363,6 @@ export default function RoomTypeModal({ isOpen, onClose,facilities, onSuccess, r
                     ))}
                   </div>
                 </div>
-
               </div>
 
               <div className="flex justify-end gap-3 mt-8">
@@ -223,16 +370,44 @@ export default function RoomTypeModal({ isOpen, onClose,facilities, onSuccess, r
                   type="button"
                   onClick={onClose}
                   className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isUploading}
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors disabled:bg-green-300"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isUploading}
                 >
-                  {isSubmitting ? "Menyimpan..." : isUpdateMode ? "Perbarui" : "Simpan"}
+                  {isSubmitting || isUploading ? (
+                    <span className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      {isUploading ? "Mengunggah..." : "Menyimpan..."}
+                    </span>
+                  ) : isUpdateMode ? (
+                    "Perbarui"
+                  ) : (
+                    "Simpan"
+                  )}
                 </button>
               </div>
             </form>

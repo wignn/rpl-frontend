@@ -1,18 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash } from "lucide-react"
+import { Plus, Edit, Trash, ImageOff } from "lucide-react"
 import RoomTypeModal from "@/components/admin/RoomTypeModal"
 import ConfirmDialog from "@/components/alert/confirmDialog"
 import AlertMessage from "@/components/alert/alertMessage"
 import RoomTypeSkeleton from "@/components/sekleton/roomtype"
 import { apiRequest } from "@/lib/api"
 import type { RoomTypeResponse } from "@/types/room"
-import { FacilityDetailResponse } from "@/types/facility"
+import type { FacilityDetailResponse } from "@/types/facility"
+import Image from "next/image"
 
 interface Props {
-  accessToken: string;
-  facilities: FacilityDetailResponse[];
+  accessToken: string
+  facilities: FacilityDetailResponse[]
 }
 
 export default function RoomsContent({ accessToken, facilities }: Props) {
@@ -23,6 +24,7 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
   const [isLoading, setIsLoading] = useState(true)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const [roomTypeToDelete, setRoomTypeToDelete] = useState<RoomTypeResponse | null>(null)
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
 
   const fetchRoomTypes = async () => {
     setIsLoading(true)
@@ -34,6 +36,7 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
           Authorization: `Bearer ${accessToken}`,
         },
       })
+      console.log("Room types fetched successfully:", response)
       setRoomTypes(response)
       setError(null)
     } catch (err) {
@@ -105,6 +108,34 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
   const handleSuccess = () => {
     setIsModalOpen(false)
     handleDataChange()
+  }
+
+  const handleImageError = (id: string) => {
+    setImageErrors((prev) => ({ ...prev, [id]: true }))
+  }
+
+  // Function to get the correct image URL
+  const getImageUrl = (roomType: RoomTypeResponse) => {
+    if (!roomType.image && !roomType.image) {
+      return null
+    }
+
+    // // If image_url exists and is a full URL, use it directly
+    // if (roomType.image && (roomType.image.startsWith("http://") || roomType.image_url.startsWith("https://"))) {
+    //   return roomType.image
+    // }
+
+    // // If image_url exists but is a relative path, prepend the API URL
+    // if (roomType.image_url) {
+    //   return `${process.env.NEXT_PUBLIC_API_URL}/${roomType.image_url}`
+    // }
+
+    // If image exists, use it with the API URL
+    if (roomType.image) {
+      return `${process.env.NEXT_PUBLIC_API_URL}/${roomType.image}`
+    }
+
+    return null
   }
 
   if (isLoading) {
@@ -184,37 +215,79 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {roomTypes.map((roomType) => (
-            <div key={roomType.id_roomtype} className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="h-48 bg-gray-200 relative">
-                <div className="absolute top-3 left-3 bg-green-500 text-white px-3 py-1 rounded-lg font-medium">
-                  {roomType.room_type}
+          {roomTypes.map((roomType) => {
+            const imageUrl = getImageUrl(roomType)
+            const hasImageError = imageErrors[roomType.id_roomtype]
+
+            return (
+              <div key={roomType.id_roomtype} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="h-48 bg-gray-100 relative">
+                  <div className="absolute top-3 left-3 bg-green-500 text-white px-3 py-1 rounded-lg font-medium z-10">
+                    {roomType.room_type}
+                  </div>
+
+                  {imageUrl && !hasImageError ? (
+                    <Image
+                      src={imageUrl || "/placeholder.svg"}
+                      alt={`Tipe ${roomType.room_type}`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover"
+                      onError={() => handleImageError(roomType.id_roomtype)}
+                      priority
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                      <ImageOff className="w-12 h-12 mb-2" />
+                      <span className="text-sm">Tidak ada gambar</span>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="p-5">
-                <h3 className="text-lg font-semibold text-gray-800">{roomType.room_type}</h3>
-                <div className="mt-4 flex justify-between items-center">
-                  <div className="text-green-600 font-bold">Rp {roomType.price.toLocaleString("id-ID")} / bulan</div>
-                  <div className="flex space-x-2">
-                    <button
-                      className="p-2 rounded-full hover:bg-gray-100"
-                      onClick={() => handleEditClick(roomType)}
-                      title="Edit"
-                    >
-                      <Edit className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <button
-                      className="p-2 rounded-full hover:bg-gray-100"
-                      title="Hapus"
-                      onClick={() => handleDeleteClick(roomType)}
-                    >
-                      <Trash className="w-4 h-4 text-red-600" />
-                    </button>
+
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-gray-800">{roomType.room_type}</h3>
+
+                  {roomType.facility && roomType.facility.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {roomType.facility.slice(0, 3).map((facility: any, index: number) => (
+                        <span
+                          key={index}
+                          className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
+                        >
+                          {facility.facility_name || `Fasilitas ${index + 1}`}
+                        </span>
+                      ))}
+                      {roomType.facility.length > 3 && (
+                        <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                          +{roomType.facility.length - 3} lainnya
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex justify-between items-center">
+                    <div className="text-green-600 font-bold">Rp {roomType.price.toLocaleString("id-ID")} / bulan</div>
+                    <div className="flex space-x-2">
+                      <button
+                        className="p-2 rounded-full hover:bg-gray-100"
+                        onClick={() => handleEditClick(roomType)}
+                        title="Edit"
+                      >
+                        <Edit className="w-4 h-4 text-gray-600" />
+                      </button>
+                      <button
+                        className="p-2 rounded-full hover:bg-gray-100"
+                        title="Hapus"
+                        onClick={() => handleDeleteClick(roomType)}
+                      >
+                        <Trash className="w-4 h-4 text-red-600" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 

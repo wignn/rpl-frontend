@@ -16,6 +16,7 @@ export class RoomTypeResponse {
     price: number;
     created_at: Date;
     updated_at: Date;
+    image: string;
     facility: {
         id_facility: string;
         facility_name: string;

@@ -2,7 +2,7 @@
 
 import type { TenantWithRentAndRoom } from "@/types/tenat"
 import { Plus, Eye, Edit, Trash } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import TenantModal from "./TenatModal"
 import { apiRequest } from "@/lib/api"
 import TenantSkeleton from "@/components/sekleton/tenant"
@@ -16,7 +16,7 @@ export default function UsersContent({ accessToken }: Props) {
   const [tenants, setTenants] = useState<TenantWithRentAndRoom[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  const fetchTenants = async () => {
+  const fetchTenants = useCallback(async () => {
     setIsLoading(true)
     try {
       const response = await apiRequest<TenantWithRentAndRoom[]>({
@@ -33,7 +33,7 @@ export default function UsersContent({ accessToken }: Props) {
     } finally {
       setIsLoading(false)
     }
-  }
+  },[accessToken])
 
   useEffect(() => {
     fetchTenants()
