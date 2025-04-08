@@ -249,7 +249,7 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
 
                   {roomType.facility && roomType.facility.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {roomType.facility.slice(0, 3).map((facility: any, index: number) => (
+                      {roomType.facility.slice(0, 3).map((facility, index: number) => (
                         <span
                           key={index}
                           className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
