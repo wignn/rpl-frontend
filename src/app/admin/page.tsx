@@ -6,6 +6,7 @@ import { RoomTypeResponse } from "@/types/room";
 import { UserDetailResponse } from "@/types/user";
 import { getServerSession } from "next-auth";
 
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   let user: UserDetailResponse | undefined;
