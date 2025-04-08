@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Home, Users, BarChart2, Settings, Menu, X, Bed, DoorClosed, Receipt } from "lucide-react"
+import { Home, Users, BarChart2, Menu, X, Bed, DoorClosed, Receipt } from "lucide-react"
 
 interface SidebarProps {
   activeTab: string
@@ -154,7 +154,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
                 <span>Transaksi</span>
               </button>
             </li>
-            <li>
+            {/* <li>
               <button
                 onClick={() => handleMenuItemClick("settings")}
                 className={`flex items-center w-full p-3 rounded-lg text-left ${
@@ -164,7 +164,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
                 <Settings className="w-5 h-5 mr-3" />
                 <span>Pengaturan</span>
               </button>
-            </li>
+            </li> */}
           </ul>
         </nav>
       </div>
