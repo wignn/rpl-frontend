@@ -5,7 +5,7 @@ import { Pencil } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import type { PaginatedReportResponse } from "@/types/report"
-import { formatDate } from "@/utils/dateNormalize"
+import { formatDate } from "@/lib/utils/dateNormalize"
 import { EditStatusModal } from "./edit-modal-status"
 
 interface Props extends PaginatedReportResponse {

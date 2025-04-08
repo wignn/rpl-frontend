@@ -1,10 +1,24 @@
 "use client";
 import type React from "react";
 import { useState } from "react";
-import { getCurrentMonth } from "@/utils/getMonth";
-import { months } from "@/data/mock-data";
+import { getCurrentMonth } from "@/lib/utils/getMonth";
 import { ChevronDown } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+
+const months = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+]
 
 const b = [...months, "semua"];
 

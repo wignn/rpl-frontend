@@ -12,15 +12,19 @@ it will check if the refresh token is valid or not
 if it is valid it will get a new access token and return it
 otherwise it will return null
 */
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function refreshAccessToken(Token: JWT): Promise<any> {
   try {
     const response = await apiRequest<loginResponse>({
       endpoint: "/users/refresh",
       method: "PATCH",
       body: {
-        refreshToken: Token.refreshToken,
         role: Token.role,
         sub: Token.name,
+      },
+      headers: {
+        Authorization: `Refresh ${Token.backendTokens.refreshToken}`,
       },
     });
 
@@ -32,11 +36,11 @@ async function refreshAccessToken(Token: JWT): Promise<any> {
     return {
       ...Token,
       backendTokens: {
-        ...newToken,
+      ...newToken,
       },
       accessTokenExpired: decodeToken?.exp
-        ? decodeToken.exp * 1000
-        : Date.now() + 60 * 60 * 1000, // 1 hour
+      ? decodeToken.exp * 1000
+      : Date.now() + 24 * 60 * 60 * 1000, 
     };
   } catch (error) {
     console.error("Error in refreshAccessToken:", error);
@@ -58,7 +62,6 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-
         const response = await apiRequest<loginResponse>({
           endpoint: "/users",
           method: "PATCH",
@@ -71,7 +74,13 @@ export const authOptions: NextAuthOptions = {
         if (response === null) {
           return null;
         }
-
+        /*
+        this is the response from the backend 
+        it contains the user data and the tokens
+        token will be decoded to get the expiration time
+        and wil return the user data with the tokens
+        and the expiration time of the access token
+        */
         const user = response;
         const newTokens = user.backendTokens;
         const decodedToken = newTokens?.accessToken
@@ -79,7 +88,7 @@ export const authOptions: NextAuthOptions = {
           : null;
 
         return {
-          id: user.id_user, 
+          id: user.id_user,
           ...user,
           accessTokenExpires: decodedToken?.exp
             ? decodedToken.exp * 1000
@@ -96,9 +105,12 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         return { ...token, ...user };
       }
+      // Return previous token if the access token has not expired yet
       if (Date.now() < token.accessTokenExpires) {
         return token;
       }
+      // Access token has expired, try to update it
+      // Send refresh token to get a new access token
       return await refreshAccessToken(token);
     },
 
@@ -106,5 +118,6 @@ export const authOptions: NextAuthOptions = {
       return { ...session, ...token };
     },
   },
+  //this is secret for the next auth
   secret: process.env.NEXTAUTH_SECRET,
 };

@@ -11,12 +11,14 @@ import { getToken } from "next-auth/jwt";
 export const middleware = async (req: NextRequest, res: NextResponse) => {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     const isAuthenticated = !!token;
-    const isAdmin = token?.role === "ADMIN"; 
-
+    const isAdmin = typeof token?.role === "string" && token.role === "ADMIN"; 
+  console.log("Admin:", isAdmin)
     const isLoginPage = req.nextUrl.pathname.startsWith("/login");
     if (isLoginPage && isAuthenticated) {
       return NextResponse.redirect(new URL("/profile", req.url));
     }
+
+    
 
     const isAdminPage = req.nextUrl.pathname.startsWith("/admin");
     if (isAdminPage && !isAuthenticated) {

@@ -31,7 +31,7 @@ declare module "next-auth/jwt" {
     id_user: string;
     exp: number;
     iat: number;
-    role: string;
+    role: boolean;
     backendTokens: {
       accessToken: string;
       refreshToken: string;

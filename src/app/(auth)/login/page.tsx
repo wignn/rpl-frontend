@@ -26,7 +26,7 @@ export default function Page() {
       });
       
       if (res?.error) {
-        setError(res.error);
+        setError("No telepon atau kata sandi salah!");
       }else{
         setSuccess("Login successful! Redirecting...")
         setTimeout(() => {
@@ -96,6 +96,9 @@ export default function Page() {
 
             {error && (
               <p className="text-red-500 text-xs font-medium text-center">{error}</p>
+            )}
+            {success && (
+              <p className="text-green-500 text-xs font-medium text-center">{success}</p>
             )}
 
             <div className="text-right">

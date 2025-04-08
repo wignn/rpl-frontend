@@ -3,10 +3,10 @@
 interface ApiRequestProps {
     endpoint: string;
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-    body?: any;
+    body?: unknown;
     headers?: HeadersInit;
-}
-
+  }
+  
 
 /*
 this function is used(Blue Print) to make api requests to the backend
@@ -23,7 +23,6 @@ export async function apiRequest<T>({ endpoint, method, body, headers = {} }: Ap
         },
         body: body ? JSON.stringify(body) : undefined,
     };
-
     try {
         const response = await fetch(`${baseUrl}${endpoint}`, config);
         
@@ -31,6 +30,7 @@ export async function apiRequest<T>({ endpoint, method, body, headers = {} }: Ap
 
         if (!response.ok) {
             const errorMessage = responseBody?.message || response.statusText;
+            console.error('API request error:', method, endpoint, errorMessage);
             throw new Error(`Error ${response.status}: ${errorMessage}`);
         }
         
