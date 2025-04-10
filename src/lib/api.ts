@@ -50,7 +50,7 @@ const config: RequestInit = {
   };
   
     try {
-        const response = await fetch(`${baseUrl}${endpoint}`, config);
+        const response = await fetch(`${baseUrl}/${endpoint}`, config);
         
         const responseBody = await response.json().catch(() => null);
 

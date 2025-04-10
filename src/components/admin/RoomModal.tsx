@@ -196,7 +196,6 @@ export default function RoomModal({
                 </select>
                 </div>
 
-              {/* Status */}
               <div className="space-y-2">
                 <label
                   htmlFor="status"

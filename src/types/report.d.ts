@@ -7,8 +7,8 @@ export class ReportCreateRequest {
     status: REPORTSTATUS;
 }
 enum REPORTSTATUS {
-    PENDING = 'pending',
-    COMPLETED = 'completed'
+    PENDING = 'PENDING',
+    COMPLETED = 'COMPLETED',
 }
 
 

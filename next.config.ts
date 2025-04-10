@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
   images:{
     domains:[
       "localhost",
-      "yucky-vonni-va5to-ccb92850.koyeb.app"
+      "yucky-vonni-va5to-ccb92850.koyeb.app",
+      "backendkosan-6545aa32801f.herokuapp.com"
     ]
   }
 };
