@@ -20,15 +20,14 @@ async function page() {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-
+    
     const res = await apiRequest<{ id_tenant: string }>({
       endpoint: `/users/${session?.id_user}`,
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-    })
-;
+    });
 console.log("res", res);
     tenatId = res.id_tenant;
   } catch (error) {

@@ -12,11 +12,13 @@ async function page() {
     const url = process.env.NEXT_PUBLIC_API_URL;
     const session = await getServerSession(authOptions);
     try{
+
+
         roomtype = await apiRequest<RoomTypeResponse[]>({
             endpoint: "/roomtype",
             method: "GET",
         })
-
+        if(session?.id_user){
         user = await apiRequest<UserDetailResponse>({
             endpoint: `/users/${session?.id_user}`,
             method: "GET",
@@ -24,7 +26,7 @@ async function page() {
                 Authorization: `Bearer ${session?.backendTokens.accessToken}`,
             },
         })        
-
+    }
     }catch (e){ 
         console.log("Error fetching data:", e);
     }

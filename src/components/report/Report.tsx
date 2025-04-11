@@ -37,7 +37,6 @@ export default function ReportPage({
         status: REPORTSTATUS.PENDING,
       };
 
-      console.log("Request Body:", requestBody);
       const response = await apiRequest({
         endpoint: "/report",
         method: "POST",
@@ -55,9 +54,12 @@ export default function ReportPage({
         setDesc("");
         setReportDate("");
       }
-
       console.log("Report submitted:", response);
     } catch (error) {
+      showAlert(
+        "error",
+        "Gagal mengirim laporan. Silakan coba lagi nanti."
+      )
       console.error("Error submitting report:", error);
     } finally {
       setIsLoading(false);
