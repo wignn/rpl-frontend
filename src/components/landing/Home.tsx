@@ -15,7 +15,7 @@ interface Props {
 export default function Home({ roomtype, user, url }: Props) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-100 via-green-200 to-green-400">
-      <Navbar user={user} />
+      <Navbar tipeKamarHref="#kamar" user={user} />
       <main className="max-w-6xl mx-auto px-8 py-6">
         <section className="mb-12">
           <h1 className="text-3xl font-bold text-gray-800 mb-1">
@@ -64,7 +64,7 @@ export default function Home({ roomtype, user, url }: Props) {
           )}
         </section>
 
-        {user && user.role === "tenant" && (
+        {user && user.role === "TENANT" && (
           <section className="mb-10">
             <div className="bg-white rounded-xl shadow-sm p-6 flex gap-6">
               <div className="flex-1">

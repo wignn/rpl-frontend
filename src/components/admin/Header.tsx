@@ -25,7 +25,7 @@ export default function Header({
 
   return (
     <header className="bg-white shadow-sm z-10 sticky top-0">
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-end p-4">
 
         <div className="flex items-center space-x-4">
 
