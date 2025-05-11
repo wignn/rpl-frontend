@@ -17,8 +17,6 @@ export const middleware = async (req: NextRequest, res: NextResponse) => {
     return NextResponse.redirect(new URL("/profile", req.url));
   }
 
-  console.log("isAuthenticated", isAdmin);
-
   const isAdminPage = req.nextUrl.pathname.startsWith("/admin");
   if (isAdminPage) {
     if (!isAuthenticated) {
