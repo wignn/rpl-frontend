@@ -56,10 +56,10 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
 
   useEffect(() => {
     fetchReportData()
-  }, [page, month, searchQuery, accessToken])
+  }, [page, month, searchQuery, accessToken , fetchReportData])
 
   const handlePageChange = (newPage: number) => {
-    setPage(newPage)
+      setPage(newPage)
   }
 
   const handleMonthChange = (newMonth: string) => {
@@ -111,6 +111,7 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
           totalPages={reportData.totalPages}
           totalItems={reportData.totalItems}
           onPageChange={handlePageChange}
+          onRefresh={fetchReportData}
           accessToken={accessToken}
         />
       )}

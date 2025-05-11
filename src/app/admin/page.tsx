@@ -82,16 +82,21 @@ export default async function Home() {
       })) as Activity[];
 
       kamarKosong = room.filter(
-        (item) => item.status === "NOTAVAILABLE"
+        (item) => item.status === "AVAILABLE"
       ).length;
 
-      kamarTerisi = room.filter((item) => item.status === "AVAILABLE").length;
+      kamarTerisi = room.filter((item) => item.status === "NOTAVAILABLE").length;
       
       kamar = room.length;
-
-      pendapatan = finance
+      const income = finance
         .filter((item) => item.type === "INCOME")
         .reduce((acc, item) => acc + item.amount, 0);
+      
+      const expenses = finance
+        .filter((item) => item.type === "OUTCOME")
+        .reduce((acc, item) => acc + item.amount, 0);
+      
+      pendapatan = income - expenses;
       user = users;
       facilities = facilitiy;
       roomtype = roomtypes;

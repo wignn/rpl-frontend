@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Home, Users, BarChart2, Menu, X, Bed, DoorClosed, Receipt } from "lucide-react"
+import { Home, Users, BarChart2, Menu, X, Bed, DoorClosed, Receipt, RefreshCcwIcon } from "lucide-react"
 
 interface SidebarProps {
   activeTab: string
@@ -125,7 +125,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
               <button
                 onClick={() => handleMenuItemClick("reports")}
                 className={`flex items-center w-full p-3 rounded-lg text-left ${
-                  activeTab === "facilities" ? "bg-green-500 text-white" : "text-gray-700 hover:bg-green-100"
+                  activeTab === "reports" ? "bg-green-500 text-white" : "text-gray-700 hover:bg-green-100"
                 }`}
               >
                 <BarChart2 className="w-5 h-5 mr-3" />
@@ -152,6 +152,28 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
               >
                 <Receipt className="w-5 h-5 mr-3" />
                 <span>Transaksi</span>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => handleMenuItemClick("facilities")}
+                className={`flex items-center w-full p-3 rounded-lg text-left ${
+                  activeTab === "facilities" ? "bg-green-500 text-white" : "text-gray-700 hover:bg-green-100"
+                }`}
+              >
+                <DoorClosed className="w-5 h-5 mr-3" />
+                <span>Fasilitas</span>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => handleMenuItemClick("records")}
+                className={`flex items-center w-full p-3 rounded-lg text-left ${
+                  activeTab === "records" ? "bg-green-500 text-white" : "text-gray-700 hover:bg-green-100"
+                }`}
+              >
+                <RefreshCcwIcon className="w-5 h-5 mr-3" />
+                <span>Record</span>
               </button>
             </li>
             {/* <li>

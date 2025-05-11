@@ -1,11 +1,13 @@
 "use client"
 
 import type { TenantWithRentAndRoom } from "@/types/tenat"
-import { Plus, Eye, Edit, Trash } from "lucide-react"
+import { Plus, Edit, Trash } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import TenantModal from "./TenatModal"
 import { apiRequest } from "@/lib/api"
 import TenantSkeleton from "@/components/sekleton/tenant"
+import ConfirmDialog from "@/components/alert/confirmDialog"
+import AlertMessage from "@/components/alert/alertMessage"
 
 interface Props {
   accessToken: string
@@ -15,6 +17,14 @@ export default function UsersContent({ accessToken }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [tenants, setTenants] = useState<TenantWithRentAndRoom[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedTenant, setSelectedTenant] = useState<TenantWithRentAndRoom | undefined>(undefined)
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
+  const [tenantToDelete, setTenantToDelete] = useState<TenantWithRentAndRoom | null>(null)
+  const [alert, setAlert] = useState({
+    type: "success" as "success" | "error",
+    message: "",
+    isOpen: false,
+  })
 
   const fetchTenants = useCallback(async () => {
     setIsLoading(true)
@@ -30,18 +40,70 @@ export default function UsersContent({ accessToken }: Props) {
       setTenants(response)
     } catch (error) {
       console.error("Error fetching tenants:", error)
+      showAlert("error", "Gagal memuat data penghuni. Silakan coba lagi.")
     } finally {
       setIsLoading(false)
     }
-  },[accessToken])
+  }, [accessToken])
 
   useEffect(() => {
     fetchTenants()
-  }, []) 
+  }, [fetchTenants])
+
+  const handleAddClick = () => {
+    setSelectedTenant(undefined)
+    setIsModalOpen(true)
+  }
+
+  const handleEditClick = (tenant: TenantWithRentAndRoom) => {
+    setSelectedTenant(tenant)
+    setIsModalOpen(true)
+  }
+
+  const handleDeleteClick = (tenant: TenantWithRentAndRoom) => {
+    setTenantToDelete(tenant)
+    setIsConfirmDialogOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!tenantToDelete) return
+
+    try {
+      await apiRequest({
+        endpoint: `/tenant/${tenantToDelete.id_tenant}`,
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })
+
+      showAlert("success", "Penghuni berhasil dihapus")
+      fetchTenants()
+    } catch (error) {
+      console.error("Error deleting tenant:", error)
+      showAlert("error", "Gagal menghapus penghuni. Silakan coba lagi.")
+    } finally {
+      setIsConfirmDialogOpen(false)
+      setTenantToDelete(null)
+    }
+  }
+
+  const showAlert = (type: "success" | "error", message: string) => {
+    setAlert({
+      type,
+      message,
+      isOpen: true,
+    })
+  }
 
   const handleSuccess = () => {
     fetchTenants()
     setIsModalOpen(false)
+  }
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "-"
+    return new Date(dateString).toLocaleDateString("id-ID")
   }
 
   return (
@@ -49,7 +111,7 @@ export default function UsersContent({ accessToken }: Props) {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-800">Penghuni</h2>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleAddClick}
           className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -108,18 +170,23 @@ export default function UsersContent({ accessToken }: Props) {
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.rent?.rent_date ? new Date(item.rent.rent_date).toLocaleDateString("id-ID") : "-"}
+                      {formatDate(item.rent?.rent_date)}
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        <button title="Lihat" className="text-blue-600 hover:text-blue-900">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button title="Edit" className="text-gray-600 hover:text-gray-900">
+                        <button
+                          title="Edit"
+                          className="text-gray-600 hover:text-gray-900"
+                          onClick={() => handleEditClick(item)}
+                        >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button title="Hapus" className="text-red-600 hover:text-red-900">
+                        <button
+                          title="Hapus"
+                          className="text-red-600 hover:text-red-900"
+                          onClick={() => handleDeleteClick(item)}
+                        >
                           <Trash className="w-4 h-4" />
                         </button>
                       </div>
@@ -148,7 +215,31 @@ export default function UsersContent({ accessToken }: Props) {
         </div>
       )}
 
-      <TenantModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={handleSuccess} />
+      <TenantModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleSuccess}
+        tenant={selectedTenant}
+        accessToken={accessToken}
+      />
+
+      <ConfirmDialog
+        isOpen={isConfirmDialogOpen}
+        title="Konfirmasi Hapus"
+        message={`Apakah Anda yakin ingin menghapus penghuni "${tenantToDelete?.full_name}"?`}
+        confirmText="Hapus"
+        cancelText="Batal"
+        confirmButtonClass="bg-red-500 hover:bg-red-600"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setIsConfirmDialogOpen(false)}
+      />
+
+      <AlertMessage
+        type={alert.type}
+        message={alert.message}
+        isOpen={alert.isOpen}
+        onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   )
 }

@@ -11,6 +11,7 @@ interface EditStatusModalProps {
   reportId: string
   currentStatus: string
   onStatusUpdated: () => void
+  OnRefresh: () => void
   accessToken: string
 }
 
@@ -19,6 +20,7 @@ export function EditStatusModal({
   onClose,
   reportId,
   currentStatus,
+  OnRefresh,
   onStatusUpdated,
   accessToken,
 }: EditStatusModalProps) {
@@ -63,8 +65,11 @@ export function EditStatusModal({
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true)
-
-      // Call the API to update the status
+  
+      if (status === currentStatus) {
+        onClose()
+        return
+      }
       await apiRequest<ReportUpdateRequest>({
         endpoint: `/report/${reportId}`,
         method: "PUT",
@@ -74,12 +79,11 @@ export function EditStatusModal({
         },
       })
 
-      // Call the callback to notify parent component
+      OnRefresh()
       onStatusUpdated()
       onClose()
     } catch (error) {
       console.error("Failed to update status:", error)
-      // You could add a toast notification here
     } finally {
       setIsSubmitting(false)
     }

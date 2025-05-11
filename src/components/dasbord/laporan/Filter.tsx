@@ -6,18 +6,18 @@ import { ChevronDown, Search } from "lucide-react"
 import { getCurrentMonth } from "@/lib/utils/getMonth"
 
 const months = [
-  "Januari",
-  "Februari",
-  "Maret",
+  "January",
+  "February",
+  "March",
   "April",
-  "Mei",
-  "Juni",
-  "Juli",
-  "Agustus",
+  "May",
+  "June",
+  "July",
+  "August",
   "September",
-  "Oktober",
+  "October",
   "November",
-  "Desember",
+  "December",
 ]
 
 const allMonths = [...months, "semua"]

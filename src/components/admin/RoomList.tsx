@@ -39,7 +39,7 @@ export default function RoomListContent({ accessToken, roomtypes }: Props) {
     isOpen: false,
   });
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!selectedRoom) return;
 
     try {
@@ -66,7 +66,7 @@ export default function RoomListContent({ accessToken, roomtypes }: Props) {
       setIsConfirmDialogOpen(false);
       setSelectedRoom(undefined);
     }
-  };
+  }, [selectedRoom]);
 
   const fetchRooms = useCallback(async () => {
     setIsLoading(true);
@@ -94,7 +94,7 @@ export default function RoomListContent({ accessToken, roomtypes }: Props) {
 
   useEffect(() => {
     fetchRooms();
-  }, []);
+  }, [ fetchRooms]);
 
   const handleEditClick = (room: RoomDetailResponse) => {
     setSelectedRoom(room);

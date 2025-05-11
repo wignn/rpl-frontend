@@ -1,123 +1,138 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect, useRef } from "react"
-import { X, Upload, ImageIcon } from "lucide-react"
-import { apiRequest, fileRequest } from "@/lib/api"
-import type { RoomTypeResponse } from "@/types/room"
-import type { FacilityDetailResponse } from "@/types/facility"
-import AlertMessage from "@/components/alert/alertMessage"
-import Image from "next/image"
+import type React from "react";
+import { useState, useEffect, useRef } from "react";
+import { X, Upload, ImageIcon } from "lucide-react";
+import { apiRequest, fileRequest } from "@/lib/api";
+import type { RoomTypeResponse } from "@/types/room";
+import type { FacilityDetailResponse } from "@/types/facility";
+import AlertMessage from "@/components/alert/alertMessage";
+import Image from "next/image";
 
 interface RoomTypeModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSuccess?: () => void
-  roomType?: RoomTypeResponse
-  facilities: FacilityDetailResponse[]
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+  roomType?: RoomTypeResponse;
+  facilities: FacilityDetailResponse[];
 }
 
-export default function RoomTypeModal({ isOpen, onClose, facilities, onSuccess, roomType }: RoomTypeModalProps) {
-  const isUpdateMode = !!roomType
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export default function RoomTypeModal({
+  isOpen,
+  onClose,
+  facilities,
+  onSuccess,
+  roomType,
+}: RoomTypeModalProps) {
+  const isUpdateMode = !!roomType;
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     roomType: "",
     price: "",
     facilities: [] as string[],
-  })
+  });
 
   const [alert, setAlert] = useState({
     type: "success" as "success" | "error",
     message: "",
     isOpen: false,
-  })
+  });
 
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (roomType) {
       setFormData({
         roomType: roomType.room_type || "",
-        price: roomType.price ? `Rp ${Number(roomType.price).toLocaleString("id-ID")}` : "",
-        facilities: roomType.facility?.map((f: { id_facility: string }) => f.id_facility) || [],
-      })
+        price: roomType.price
+          ? `Rp ${Number(roomType.price).toLocaleString("id-ID")}`
+          : "",
+        facilities:
+          roomType.facility?.map(
+            (f: { id_facility: string }) => f.id_facility
+          ) || [],
+      });
 
       if (roomType.image) {
-        setUploadedImageUrl(roomType.image)
+        setUploadedImageUrl(roomType.image);
       }
     } else {
-      resetForm()
+      resetForm();
     }
-  }, [roomType, isOpen])
+  }, [roomType, isOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleFacilityChange = (facilityId: string) => {
     setFormData((prev) => {
-      const facilities = [...prev.facilities]
+      const facilities = [...prev.facilities];
       if (facilities.includes(facilityId)) {
         return {
           ...prev,
           facilities: facilities.filter((id) => id !== facilityId),
-        }
+        };
       } else {
         return {
           ...prev,
           facilities: [...facilities, facilityId],
-        }
+        };
       }
-    })
-  }
+    });
+  };
 
   const showAlert = (type: "success" | "error", message: string) => {
     setAlert({
       type,
       message,
       isOpen: true,
-    })
-  }
+    });
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
+      const file = e.target.files[0];
 
       if (!file.type.startsWith("image/")) {
-        showAlert("error", "File harus berupa gambar (JPG, PNG, dll)")
-        return
+        showAlert("error", "File harus berupa gambar (JPG, PNG, dll)");
+        return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        showAlert("error", "Ukuran gambar tidak boleh lebih dari 5MB")
-        return
+        showAlert("error", "Ukuran gambar tidak boleh lebih dari 5MB");
+        return;
       }
 
-      setSelectedImage(file)
+      setSelectedImage(file);
 
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewUrl(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const uploadImage = async () => {
-    if (!selectedImage) return null
+    if (!selectedImage) return null;
 
-    setIsUploading(true)
+    setIsUploading(true);
     try {
-      const formData = new FormData()
-      formData.append("file", selectedImage)
-console.log(process.env.API_KEY)
+      const formData = new FormData();
+      formData.append("file", selectedImage);
+      console.log(process.env.API_KEY);
 
       const response = await fileRequest<{ path: string }>({
         endpoint: "files/upload",
@@ -126,114 +141,124 @@ console.log(process.env.API_KEY)
         headers: {
           "x-api-key": process.env.API_KEY as string,
         },
-      })
+      });
 
       if (!response) {
-        throw new Error("Upload failed")
+        throw new Error("Upload failed");
       }
 
-      setUploadedImageUrl(response.path) 
-      return response.path
+      setUploadedImageUrl(response.path);
+      return response.path;
     } catch (error) {
-      console.error("Error uploading image:", error)
-      showAlert("error", "Gagal mengunggah gambar. Silakan coba lagi.")
-      return null
+      console.error("Error uploading image:", error);
+      showAlert("error", "Gagal mengunggah gambar. Silakan coba lagi.");
+      return null;
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
-      let imageUrl = uploadedImageUrl
+      let imageUrl = uploadedImageUrl;
       if (selectedImage) {
-        imageUrl = await uploadImage()
-        console.log("Image URL:", imageUrl)
+        imageUrl = await uploadImage();
+        console.log("Image URL:", imageUrl);
         if (!imageUrl) {
-          setIsSubmitting(false)
-          return 
+          setIsSubmitting(false);
+          return;
         }
       }
 
-      const priceAsNumber = Number.parseFloat(formData.price.replace(/[^\d]/g, ""))
+      const priceAsNumber = Number.parseFloat(
+        formData.price.replace(/[^\d]/g, "")
+      );
 
       const requestData = {
         room_type: formData.roomType,
         price: priceAsNumber,
         facilities: formData.facilities,
         image: imageUrl,
-      }
+      };
 
-      let res
+      let res;
 
       if (isUpdateMode && roomType?.id_roomtype) {
         res = await apiRequest({
           endpoint: `/roomtype/${roomType.id_roomtype}`,
           method: "PUT",
           body: requestData,
-        })
+        });
       } else {
-        console.log("Request Data:", requestData)
+        console.log("Request Data:", requestData);
         res = await apiRequest({
           endpoint: "/roomtype",
           method: "POST",
           body: requestData,
-        })
+        });
       }
 
       if (res) {
-        showAlert("success", `Tipe kamar berhasil ${isUpdateMode ? "diperbarui" : "ditambahkan"}`)
-        resetForm()
-        onClose()
+        showAlert(
+          "success",
+          `Tipe kamar berhasil ${isUpdateMode ? "diperbarui" : "ditambahkan"}`
+        );
+        resetForm();
+        onClose();
 
-        if (onSuccess) onSuccess()
+        if (onSuccess) onSuccess();
       }
     } catch (error) {
-      console.error("Error submitting form:", error)
-      showAlert("error", `Gagal ${isUpdateMode ? "memperbarui" : "menambahkan"} tipe kamar. Silakan coba lagi.`)
+      console.error("Error submitting form:", error);
+      showAlert(
+        "error",
+        `Gagal ${
+          isUpdateMode ? "memperbarui" : "menambahkan"
+        } tipe kamar. Silakan coba lagi.`
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const resetForm = () => {
     setFormData({
       roomType: "",
       price: "",
       facilities: [],
-    })
-    setSelectedImage(null)
-    setPreviewUrl(null)
-    setUploadedImageUrl(null)
+    });
+    setSelectedImage(null);
+    setPreviewUrl(null);
+    setUploadedImageUrl(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      fileInputRef.current.value = "";
     }
-  }
+  };
 
   const formatPrice = (value: string) => {
-    const numericValue = value.replace(/[^\d]/g, "")
+    const numericValue = value.replace(/[^\d]/g, "");
     if (numericValue) {
-      return `Rp ${Number.parseInt(numericValue).toLocaleString("id-ID")}`
+      return `Rp ${Number.parseInt(numericValue).toLocaleString("id-ID")}`;
     }
-    return ""
-  }
+    return "";
+  };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target
-    const formattedValue = formatPrice(value)
-    setFormData((prev) => ({ ...prev, price: formattedValue }))
-  }
+    const { value } = e.target;
+    const formattedValue = formatPrice(value);
+    setFormData((prev) => ({ ...prev, price: formattedValue }));
+  };
 
   const triggerFileInput = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.click()
+      fileInputRef.current.click();
     }
-  }
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <>
@@ -243,7 +268,11 @@ console.log(process.env.API_KEY)
             <h2 className="text-xl font-semibold text-gray-800">
               {isUpdateMode ? "Edit Tipe Kamar" : "Tambah Tipe Kamar Baru"}
             </h2>
-            <button title="Close" onClick={onClose} className="p-1 rounded-full hover:bg-gray-100">
+            <button
+              title="Close"
+              onClick={onClose}
+              className="p-1 rounded-full hover:bg-gray-100"
+            >
               <X className="w-6 h-6 text-gray-500" />
             </button>
           </div>
@@ -252,7 +281,10 @@ console.log(process.env.API_KEY)
             <form onSubmit={handleSubmit}>
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="roomType" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="roomType"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Nama Tipe Kamar
                   </label>
                   <input
@@ -268,7 +300,10 @@ console.log(process.env.API_KEY)
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="price"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Harga per Bulan
                   </label>
                   <input
@@ -284,7 +319,9 @@ console.log(process.env.API_KEY)
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Foto Kamar</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Foto Kamar
+                  </label>
 
                   <div className="mt-1 flex flex-col items-center">
                     <input
@@ -305,7 +342,7 @@ console.log(process.env.API_KEY)
                         <Image
                           width={500}
                           height={500}
-                          src={previewUrl || "/placeholder.svg"}
+                          src={previewUrl} 
                           alt="Preview"
                           className="h-full w-full object-cover rounded-lg"
                         />
@@ -313,15 +350,19 @@ console.log(process.env.API_KEY)
                         <Image
                           width={500}
                           height={500}
-                          src={uploadedImageUrl || "/placeholder.svg"}
+                          src={`${process.env.NEXT_PUBLIC_API_URL}/${uploadedImageUrl}`}
                           alt="Room Type"
                           className="h-full w-full object-cover rounded-lg"
                         />
                       ) : (
                         <div className="text-center p-4">
                           <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                          <p className="mt-1 text-sm text-gray-500">Klik untuk mengunggah gambar</p>
-                          <p className="text-xs text-gray-400">JPG, PNG, GIF hingga 5MB</p>
+                          <p className="mt-1 text-sm text-gray-500">
+                            Klik untuk mengunggah gambar
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            JPG, PNG, GIF hingga 5MB
+                          </p>
                         </div>
                       )}
                     </div>
@@ -332,31 +373,46 @@ console.log(process.env.API_KEY)
                       className="mt-2 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                     >
                       <Upload className="h-4 w-4 mr-2" />
-                      {previewUrl || uploadedImageUrl ? "Ganti Gambar" : "Unggah Gambar"}
+                      {previewUrl || uploadedImageUrl
+                        ? "Ganti Gambar"
+                        : "Unggah Gambar"}
                     </button>
 
                     {/* Selected file name */}
                     {selectedImage && (
                       <p className="mt-2 text-xs text-gray-500">
-                        {selectedImage.name} ({Math.round(selectedImage.size / 1024)} KB)
+                        {selectedImage.name} (
+                        {Math.round(selectedImage.size / 1024)} KB)
                       </p>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Fasilitas</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Fasilitas
+                  </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {facilities.map((facility) => (
-                      <div key={facility.id_fasility} className="flex items-center">
+                      <div
+                        key={facility.id_fasility}
+                        className="flex items-center"
+                      >
                         <input
                           type="checkbox"
                           id={facility.id_fasility}
-                          checked={formData.facilities.includes(facility.id_fasility)}
-                          onChange={() => handleFacilityChange(facility.id_fasility)}
+                          checked={formData.facilities.includes(
+                            facility.id_fasility
+                          )}
+                          onChange={() =>
+                            handleFacilityChange(facility.id_fasility)
+                          }
                           className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                         />
-                        <label htmlFor={facility.id_fasility} className="ml-2 text-sm text-gray-700">
+                        <label
+                          htmlFor={facility.id_fasility}
+                          className="ml-2 text-sm text-gray-700"
+                        >
                           {facility.facility_name}
                         </label>
                       </div>
@@ -422,5 +478,5 @@ console.log(process.env.API_KEY)
         onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
       />
     </>
-  )
+  );
 }

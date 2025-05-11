@@ -5,10 +5,12 @@ import { Pencil, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import type { PaginatedReportResponse } from "@/types/report"
 import { formatDate } from "@/lib/utils/dateNormalize"
 import { EditStatusModal } from "./edit-modal-status"
+import AlertMessage from "@/components/alert/alertMessage"
 
 interface ReportTableProps extends PaginatedReportResponse {
   onPageChange: (page: number) => void
   accessToken: string
+  onRefresh: () => void
 }
 
 export default function ReportTable({
@@ -16,12 +18,20 @@ export default function ReportTable({
   currentPage,
   totalPages,
   onPageChange,
+  onRefresh,
   accessToken,
 }: ReportTableProps) {
   const [editingReport, setEditingReport] = useState<{
     id: string
     status: string
   } | null>(null)
+
+    const [alert, setAlert] = useState({
+      type: "success" as "success" | "error",
+      message: "",
+      isOpen: false,
+    })
+  
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -50,8 +60,7 @@ export default function ReportTable({
     setEditingReport(null)
   }
 
-  const handleStatusUpdated = () => {
-    // Refresh data
+  const handleStatusUpdated = async () => {
     onPageChange(currentPage)
     setEditingReport(null)
   }
@@ -158,12 +167,22 @@ export default function ReportTable({
         <EditStatusModal
           isOpen={!!editingReport}
           onClose={handleCloseModal}
+          OnRefresh={onRefresh}
           reportId={editingReport.id}
           currentStatus={editingReport.status}
           onStatusUpdated={handleStatusUpdated}
           accessToken={accessToken}
         />
       )}
+
+      
+
+      <AlertMessage  
+       type={alert.type}
+       message={alert.message}
+       isOpen={alert.isOpen}
+       onClose={() => setAlert({ ...alert, isOpen: false })}
+      />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Plus, Edit, Trash, ImageOff } from "lucide-react"
 import RoomTypeModal from "@/components/admin/RoomTypeModal"
 import ConfirmDialog from "@/components/alert/confirmDialog"
@@ -26,7 +26,7 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
   const [roomTypeToDelete, setRoomTypeToDelete] = useState<RoomTypeResponse | null>(null)
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
 
-  const fetchRoomTypes = async () => {
+  const fetchRoomTypes = useCallback(async () => {
     setIsLoading(true)
     try {
       const response = await apiRequest<RoomTypeResponse[]>({
@@ -45,11 +45,11 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
     } finally {
       setIsLoading(false)
     }
-  }
+  } , [accessToken])
 
   useEffect(() => {
     fetchRoomTypes()
-  }, [])
+  }, [fetchRoomTypes])
 
   const [alert, setAlert] = useState({
     type: "success" as "success" | "error",

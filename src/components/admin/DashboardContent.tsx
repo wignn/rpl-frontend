@@ -17,6 +17,7 @@ interface Activity {
 }
 
 export default function DashboardContent({kamar, kamarKosong, kamarTerisi, pendapatan, actifity}:Props) {
+  console.log(pendapatan)
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

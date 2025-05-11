@@ -15,7 +15,6 @@ export default function Header({
   showUserDropdown,
   setShowUserDropdown,
 }: HeaderProps) {
-  console.log(user);
   const handleSignOut = async () => {
     await signOut({
       callbackUrl: "/",

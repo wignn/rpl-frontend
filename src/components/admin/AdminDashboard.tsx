@@ -13,6 +13,8 @@ import RoomListContent from "./RoomList"
 import { FacilityDetailResponse } from "@/types/facility"
 import { RoomTypeResponse } from "@/types/room"
 import Report from "@/components/admin/ReportContent"
+import FacilityContent from "./FacilityContent"
+import RecordContent from "./RecordContent"
 
 interface Props {
   accessToken: string;
@@ -51,6 +53,8 @@ export default function AdminDashboard({accessToken, facilities, roomtype,user, 
           {activeTab === "transactions" && <FinanceDashboard/>}
           {activeTab === "reports" && <Report accessToken={accessToken}/>}
           {activeTab === "settings" && <SettingsContent />}
+          {activeTab === "facilities" && <FacilityContent accessToken={accessToken}/>}
+          {activeTab === "records" && <RecordContent accessToken={accessToken}/>}
         </main>
       </div>
     </div>
