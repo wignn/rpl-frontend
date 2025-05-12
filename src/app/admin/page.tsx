@@ -26,7 +26,7 @@ export default async function Home() {
   let kamarTerisi: number = 0;
   let kamar : number = 0;
   let actifity: Activity[] = [];
-
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   try {
     const session = await getServerSession(authOptions);
 
@@ -107,6 +107,7 @@ export default async function Home() {
 
   return (
     <AdminDashboard
+      baseUrl={baseUrl as string}
       actifity={actifity}
       kamar={kamar}
       kamarTerisi={kamarTerisi}

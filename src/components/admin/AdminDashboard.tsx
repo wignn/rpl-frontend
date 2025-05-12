@@ -20,8 +20,8 @@ interface Props {
   accessToken: string;
   user: UserDetailResponse;
   facilities: FacilityDetailResponse[]
-  roomtype: RoomTypeResponse[]
-
+  roomtype: RoomTypeResponse[] 
+  baseUrl: string;
   kamar: number;
   kamarKosong: number;
   kamarTerisi: number;
@@ -36,9 +36,10 @@ interface Activity {
 }
 
 
-export default function AdminDashboard({accessToken, facilities, roomtype,user, kamar, kamarKosong, kamarTerisi, pendapatan, actifity, }: Props) {
+export default function AdminDashboard({accessToken, baseUrl,facilities, roomtype,user, kamar, kamarKosong, kamarTerisi, pendapatan, actifity, }: Props) {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [showUserDropdown, setShowUserDropdown] = useState(false)
+
   return (
     <div className="flex h-screen bg-gradient-to-b from-green-50 to-green-100">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -47,7 +48,7 @@ export default function AdminDashboard({accessToken, facilities, roomtype,user, 
 
         <main className="flex-1 overflow-y-auto p-6">
           {activeTab === "dashboard" && <DashboardContent accessToken={accessToken} kamar={kamar} kamarKosong={kamarKosong} kamarTerisi={kamarTerisi} pendapatan={pendapatan} actifity={actifity}/>}
-          {activeTab === "rooms" && <RoomsContent facilities={facilities} accessToken={accessToken}/>}
+          {activeTab === "rooms" && <RoomsContent facilities={facilities} baseUrl={baseUrl as string} accessToken={accessToken}/>}
           {activeTab === "users" && <UsersContent accessToken={accessToken}/>}
           {activeTab === "roomList" && <RoomListContent roomtypes={roomtype} accessToken={accessToken}/>}
           {activeTab === "transactions" && <FinanceDashboard/>}

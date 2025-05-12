@@ -14,6 +14,7 @@ interface RoomTypeModalProps {
   onClose: () => void;
   onSuccess?: () => void;
   roomType?: RoomTypeResponse;
+  baseUrl: string;
   facilities: FacilityDetailResponse[];
 }
 
@@ -23,6 +24,7 @@ export default function RoomTypeModal({
   facilities,
   onSuccess,
   roomType,
+  baseUrl,
 }: RoomTypeModalProps) {
   const isUpdateMode = !!roomType;
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -132,15 +134,11 @@ export default function RoomTypeModal({
     try {
       const formData = new FormData();
       formData.append("file", selectedImage);
-      console.log(process.env.API_KEY);
 
       const response = await fileRequest<{ path: string }>({
         endpoint: "files/upload",
         method: "POST",
         body: formData,
-        headers: {
-          "x-api-key": process.env.API_KEY as string,
-        },
       });
 
       if (!response) {
@@ -166,7 +164,6 @@ export default function RoomTypeModal({
       let imageUrl = uploadedImageUrl;
       if (selectedImage) {
         imageUrl = await uploadImage();
-        console.log("Image URL:", imageUrl);
         if (!imageUrl) {
           setIsSubmitting(false);
           return;
@@ -187,13 +184,17 @@ export default function RoomTypeModal({
       let res;
 
       if (isUpdateMode && roomType?.id_roomtype) {
+        await fileRequest({
+          endpoint: `${roomType.image}`,
+          method: "DELETE",
+        })
+
         res = await apiRequest({
           endpoint: `/roomtype/${roomType.id_roomtype}`,
           method: "PUT",
           body: requestData,
         });
       } else {
-        console.log("Request Data:", requestData);
         res = await apiRequest({
           endpoint: "/roomtype",
           method: "POST",
@@ -350,7 +351,7 @@ export default function RoomTypeModal({
                         <Image
                           width={500}
                           height={500}
-                          src={`${process.env.NEXT_PUBLIC_API_URL}/${uploadedImageUrl}`}
+                          src={`${baseUrl}/${uploadedImageUrl}`}
                           alt="Room Type"
                           className="h-full w-full object-cover rounded-lg"
                         />

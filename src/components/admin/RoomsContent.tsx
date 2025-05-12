@@ -14,9 +14,10 @@ import Image from "next/image"
 interface Props {
   accessToken: string
   facilities: FacilityDetailResponse[]
+  baseUrl: string
 }
 
-export default function RoomsContent({ accessToken, facilities }: Props) {
+export default function RoomsContent({ accessToken, facilities, baseUrl }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedRoomType, setSelectedRoomType] = useState<RoomTypeResponse | undefined>(undefined)
   const [roomTypes, setRoomTypes] = useState<RoomTypeResponse[]>([])
@@ -24,7 +25,6 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
   const [isLoading, setIsLoading] = useState(true)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const [roomTypeToDelete, setRoomTypeToDelete] = useState<RoomTypeResponse | null>(null)
-  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({})
 
   const fetchRoomTypes = useCallback(async () => {
     setIsLoading(true)
@@ -110,33 +110,7 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
     handleDataChange()
   }
 
-  const handleImageError = (id: string) => {
-    setImageErrors((prev) => ({ ...prev, [id]: true }))
-  }
 
-  // Function to get the correct image URL
-  const getImageUrl = (roomType: RoomTypeResponse) => {
-    if (!roomType.image && !roomType.image) {
-      return null
-    }
-
-    // // If image_url exists and is a full URL, use it directly
-    // if (roomType.image && (roomType.image.startsWith("http://") || roomType.image_url.startsWith("https://"))) {
-    //   return roomType.image
-    // }
-
-    // // If image_url exists but is a relative path, prepend the API URL
-    // if (roomType.image_url) {
-    //   return `${process.env.NEXT_PUBLIC_API_URL}/${roomType.image_url}`
-    // }
-
-    // If image exists, use it with the API URL
-    if (roomType.image) {
-      return `${process.env.NEXT_PUBLIC_API_URL}/${roomType.image}`
-    }
-
-    return null
-  }
 
   if (isLoading) {
     return <RoomTypeSkeleton />
@@ -216,9 +190,7 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {roomTypes.map((roomType) => {
-            const imageUrl = getImageUrl(roomType)
-            const hasImageError = imageErrors[roomType.id_roomtype]
-
+            const imageUrl = `${baseUrl}/${roomType.image}`
             return (
               <div key={roomType.id_roomtype} className="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div className="h-48 bg-gray-100 relative">
@@ -226,14 +198,13 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
                     {roomType.room_type}
                   </div>
 
-                  {imageUrl && !hasImageError ? (
+                  {imageUrl ? (
                     <Image
                       src={imageUrl || "/placeholder.svg"}
                       alt={`Tipe ${roomType.room_type}`}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover"
-                      onError={() => handleImageError(roomType.id_roomtype)}
                       priority
                     />
                   ) : (
@@ -292,6 +263,7 @@ export default function RoomsContent({ accessToken, facilities }: Props) {
       )}
 
       <RoomTypeModal
+        baseUrl={baseUrl}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         facilities={facilities}

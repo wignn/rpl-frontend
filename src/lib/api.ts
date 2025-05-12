@@ -42,14 +42,19 @@ export async function apiRequest<T>({ endpoint, method, body, headers = {} }: Ap
 }
 
 export async function fileRequest<T>({ endpoint, method, body, headers = {} }: ApiRequestProps): Promise<T> {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
 const config: RequestInit = {
     method,
-    headers,
+    headers:{
+        'x-api-key': process.env.API_KEY as string,
+        ...headers,
+    },
     body: body instanceof FormData ? body : JSON.stringify(body),
   };
   
     try {
+        console.log("file request", `${baseUrl}/${endpoint}`, config);
         const response = await fetch(`${baseUrl}/${endpoint}`, config);
         
         const responseBody = await response.json().catch(() => null);

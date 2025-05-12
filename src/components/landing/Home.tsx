@@ -14,6 +14,7 @@ interface Props {
 
 export default function Home({ roomtype, user, url }: Props) {
   return (
+    console.log("url", `${url}/${roomtype.map((item) => item.image)}`),
     <div className="min-h-screen bg-gradient-to-b from-green-100 via-green-200 to-green-400">
       <Navbar tipeKamarHref="#kamar" user={user} />
       <main className="max-w-6xl mx-auto px-8 py-6">

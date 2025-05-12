@@ -54,7 +54,7 @@ export default function RoomListContent({ accessToken, roomtypes }: Props) {
         isOpen: true,
       });
 
-      handleDataChange();
+      fetchRooms();
     } catch (error) {
       console.error("Error deleting room type:", error);
       setAlert({
@@ -107,9 +107,7 @@ export default function RoomListContent({ accessToken, roomtypes }: Props) {
     fetchRooms();
   };
 
-  const handleDataChange = () => {
-    fetchRooms();
-  };
+
   if (isLoading) {
     return <RoomListSkeleton />;
   }

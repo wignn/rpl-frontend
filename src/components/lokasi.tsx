@@ -1,5 +1,10 @@
-import Image from "next/image"
+"use client"
+
+
 import { MapPin } from "lucide-react"
+import dynamic from 'next/dynamic';
+
+const MapLeaflet = dynamic(() => import('@/components/MapLeaflet'), { ssr: false });
 
 export const nearbyPlacesData = [
     { name: "Universitas Indonesia", distance: "500 meter (5 menit jalan kaki)" },
@@ -42,13 +47,7 @@ export default function Lokasi() {
               </div>
             </div>
             <div className="overflow-hidden rounded-lg border border-green-100">
-              <Image
-                src="/mapkonjpg.jpg?height=400&width=600"
-                alt="Peta Lokasi"
-                width={600}
-                height={400}
-                className="w-full object-cover"
-              />
+                <MapLeaflet lat={-6.322189261099615} lng={107.33368275548138} />
             </div>
           </div>
         </div>
