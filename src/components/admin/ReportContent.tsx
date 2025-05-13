@@ -6,6 +6,7 @@ import type { PaginatedReportResponse } from "@/types/report"
 import ReportFilter from "@/components/dasbord/laporan/Filter"
 import ReportTable from "@/components/dasbord/laporan/Tabel"
 import ReportSkeleton from "@/components/sekleton/report"
+import AlertMessage from "../alert/alertMessage"
 
 
 interface ReportContentProps {
@@ -19,6 +20,19 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
   const [page, setPage] = useState(1)
   const [month, setMonth] = useState(new Date().toLocaleString("default", { month: "long" }))
   const [searchQuery, setSearchQuery] = useState("")
+  const [alert, setAlert] = useState({
+    type: "success" as "success" | "error",
+    message: "",
+    isOpen: false,
+  })
+
+  const showAlert = (type: "success" | "error", message: string) => {
+    setAlert({
+      type,
+      message,
+      isOpen: true,
+    })
+  }
   const limit = 5
   const fetchReportData = useCallback(async () => {
     setIsLoading(true)
@@ -106,6 +120,7 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
 
       {reportData && (
         <ReportTable
+          showAlert={showAlert}
           data={reportData.data}
           currentPage={reportData.currentPage}
           totalPages={reportData.totalPages}
@@ -115,6 +130,13 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
           accessToken={accessToken}
         />
       )}
+
+      <AlertMessage 
+        type={alert.type}
+        message={alert.message}
+        isOpen={alert.isOpen}
+        onClose={() => setAlert({ ...alert, isOpen: false })}
+      />
     </div>
   )
 }

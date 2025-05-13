@@ -6,23 +6,24 @@ import { X, Upload, ImageIcon } from "lucide-react";
 import { apiRequest, fileRequest } from "@/lib/api";
 import type { RoomTypeResponse } from "@/types/room";
 import type { FacilityDetailResponse } from "@/types/facility";
-import AlertMessage from "@/components/alert/alertMessage";
 import Image from "next/image";
 
 interface RoomTypeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onRefresh: () => void;
   roomType?: RoomTypeResponse;
   baseUrl: string;
+  showAlert: (type: "success" | "error", message: string) => void;
   facilities: FacilityDetailResponse[];
 }
 
 export default function RoomTypeModal({
   isOpen,
   onClose,
+  showAlert,
   facilities,
-  onSuccess,
+  onRefresh,
   roomType,
   baseUrl,
 }: RoomTypeModalProps) {
@@ -34,11 +35,6 @@ export default function RoomTypeModal({
     facilities: [] as string[],
   });
 
-  const [alert, setAlert] = useState({
-    type: "success" as "success" | "error",
-    message: "",
-    isOpen: false,
-  });
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -96,13 +92,6 @@ export default function RoomTypeModal({
     });
   };
 
-  const showAlert = (type: "success" | "error", message: string) => {
-    setAlert({
-      type,
-      message,
-      isOpen: true,
-    });
-  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -184,7 +173,7 @@ export default function RoomTypeModal({
       let res;
 
       if (isUpdateMode && roomType?.id_roomtype) {
-        await fileRequest({
+       await fileRequest({
           endpoint: `${roomType.image}`,
           method: "DELETE",
         })
@@ -194,12 +183,14 @@ export default function RoomTypeModal({
           method: "PUT",
           body: requestData,
         });
+
       } else {
         res = await apiRequest({
           endpoint: "/roomtype",
           method: "POST",
           body: requestData,
         });
+        console.log(res);
       }
 
       if (res) {
@@ -207,10 +198,10 @@ export default function RoomTypeModal({
           "success",
           `Tipe kamar berhasil ${isUpdateMode ? "diperbarui" : "ditambahkan"}`
         );
+                onRefresh();
         resetForm();
         onClose();
-
-        if (onSuccess) onSuccess();
+        onRefresh();
       }
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -334,7 +325,6 @@ export default function RoomTypeModal({
                       className="hidden"
                     />
 
-                    {/* Image preview or placeholder */}
                     <div
                       className="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors mb-2"
                       onClick={triggerFileInput}
@@ -472,12 +462,6 @@ export default function RoomTypeModal({
         </div>
       </div>
 
-      <AlertMessage
-        type={alert.type}
-        message={alert.message}
-        isOpen={alert.isOpen}
-        onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
-      />
     </>
   );
 }

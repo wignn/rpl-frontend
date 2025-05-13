@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Home, Users, BarChart2, Menu, X, Bed, DoorClosed, Receipt, RefreshCcwIcon } from "lucide-react"
-
+import Link from "next/link"
 interface SidebarProps {
   activeTab: string
   setActiveTab: (tab: string) => void
@@ -74,7 +74,9 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         } md:translate-x-0`}
       >
         <div className="p-4 border-b flex items-center justify-between">
-          <h1 className="text-xl font-bold text-green-600">Nama Kost Admin</h1>
+          <Link href="/" className="flex items-center">
+          <h1 className="text-xl font-bold text-green-600">Green Jaya Kost</h1>
+          </Link>
           {isMobile && (
             <button
               title="x"

@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     ],
     domains: [
       "yucky-vonni-va5to-ccb92850.koyeb.app",
+      "localhost"
     ]
   },
 };

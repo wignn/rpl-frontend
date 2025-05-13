@@ -18,7 +18,9 @@ export function FinanceChart({ data, timePeriod }: FinanceChartProps) {
 
     const ctx = canvasRef.current.getContext("2d")
     if (!ctx) return
+
     const now = new Date()
+
     const filteredData = data.filter((item) => {
       const itemDate = new Date(item.created_at)
 
@@ -31,21 +33,27 @@ export function FinanceChart({ data, timePeriod }: FinanceChartProps) {
           )
         case "week":
           const oneWeekAgo = new Date()
-          oneWeekAgo.setDate(now.getDate() - 7)
-          return itemDate >= oneWeekAgo
+          oneWeekAgo.setDate(now.getDate() - 6)
+          oneWeekAgo.setHours(0, 0, 0, 0)
+          return itemDate >= oneWeekAgo && itemDate <= now
         case "month":
-          return itemDate.getMonth() === now.getMonth() && itemDate.getFullYear() === now.getFullYear()
+          return (
+            itemDate.getMonth() === now.getMonth() &&
+            itemDate.getFullYear() === now.getFullYear()
+          )
         case "year":
           return itemDate.getFullYear() === now.getFullYear()
         default:
           return true
       }
     })
+
     const groupedData: Record<string, { income: number; outcome: number }> = {}
     let labels: string[] = []
+    let keys: string[] = []
 
     switch (timePeriod) {
-      case "day":
+      case "day": {
         for (let i = 0; i < 24; i++) {
           const hour = i.toString().padStart(2, "0")
           groupedData[hour] = { income: 0, outcome: 0 }
@@ -56,117 +64,99 @@ export function FinanceChart({ data, timePeriod }: FinanceChartProps) {
           const date = new Date(item.created_at)
           const hour = date.getHours().toString().padStart(2, "0")
 
-          if (item.type === "INCOME") {
-            groupedData[hour].income += item.amount
-          } else {
-            groupedData[hour].outcome += item.amount
-          }
+          if (item.type === "INCOME") groupedData[hour].income += item.amount
+          else groupedData[hour].outcome += item.amount
         })
-        break
 
-      case "week":
-        // Group by day of week (last 7 days)
+        keys = labels.map((label) => label.slice(0, 2))
+        break
+      }
+
+      case "week": {
         const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
-        const today = now.getDay()
+        const dateMap = new Map<string, string>()
 
         for (let i = 6; i >= 0; i--) {
-          const dayIndex = (today - i + 7) % 7
-          const day = dayNames[dayIndex]
-          const date = new Date()
+          const date = new Date(now)
           date.setDate(now.getDate() - i)
-          const dateStr = `${day} ${date.getDate()}`
+          date.setHours(0, 0, 0, 0)
 
-          groupedData[dateStr] = { income: 0, outcome: 0 }
-          labels.push(dateStr)
+          const dateKey = date.toISOString().split("T")[0]
+          const label = `${dayNames[date.getDay()]} ${date.getDate()}`
+
+          dateMap.set(dateKey, label)
+          groupedData[dateKey] = { income: 0, outcome: 0 }
         }
 
         filteredData.forEach((item) => {
           const date = new Date(item.created_at)
-          const dayDiff = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+          date.setHours(0, 0, 0, 0)
+          const dateKey = date.toISOString().split("T")[0]
 
-          if (dayDiff >= 0 && dayDiff < 7) {
-            const dayIndex = (today - dayDiff + 7) % 7
-            const day = dayNames[dayIndex]
-            const dateStr = `${day} ${date.getDate()}`
-
-            console.log(item.type)
-            if (!groupedData[dateStr]) {
-              groupedData[dateStr] = { income: 0, outcome: 0 }
-            }
-            
-            if (item.type === "INCOME") {
-              groupedData[dateStr].income += item.amount
-            } else {
-              groupedData[dateStr].outcome += item.amount
-            }
-            
+          if (groupedData[dateKey]) {
+            if (item.type === "INCOME") groupedData[dateKey].income += item.amount
+            else groupedData[dateKey].outcome += item.amount
           }
         })
-        break
 
-      case "month":
-        // Group by day of month (1-31)
+        keys = Array.from(dateMap.keys())
+        labels = Array.from(dateMap.values())
+        break
+      }
+
+      case "month": {
         const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
 
         for (let i = 1; i <= daysInMonth; i++) {
-          const day = i.toString()
-          groupedData[day] = { income: 0, outcome: 0 }
-          labels.push(day)
+          const key = i.toString()
+          groupedData[key] = { income: 0, outcome: 0 }
+          labels.push(key)
         }
 
         filteredData.forEach((item) => {
-          const date = new Date(item.created_at)
-          const day = date.getDate().toString()
-
-          if (item.type === "INCOME") {
-            groupedData[day].income += item.amount
-          } else {
-            groupedData[day].outcome += item.amount
-          }
+          const day = new Date(item.created_at).getDate().toString()
+          if (item.type === "INCOME") groupedData[day].income += item.amount
+          else groupedData[day].outcome += item.amount
         })
+
+        keys = labels
         break
+      }
 
       case "year":
-      default:
-        // Group by month (Jan-Dec)
+      default: {
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
-        monthNames.forEach((month) => {
-          groupedData[month] = { income: 0, outcome: 0 }
+        monthNames.forEach((month, idx) => {
+          groupedData[idx.toString()] = { income: 0, outcome: 0 }
         })
-        labels = monthNames
 
         filteredData.forEach((item) => {
-          const date = new Date(item.created_at)
-          const month = monthNames[date.getMonth()]
-
-          if (item.type === "INCOME") {
-            groupedData[month].income += item.amount
-          } else {
-            groupedData[month].outcome += item.amount
-          }
+          const month = new Date(item.created_at).getMonth().toString()
+          if (item.type === "INCOME") groupedData[month].income += item.amount
+          else groupedData[month].outcome += item.amount
         })
+
+        keys = monthNames.map((_, idx) => idx.toString())
+        labels = monthNames
         break
+      }
     }
 
-    // Prepare data for chart
-    const incomeData = labels.map((label) => groupedData[label]?.income || 0)
-    const outcomeData = labels.map((label) => groupedData[label]?.outcome || 0)
+    // Hitung selisih antara income dan outcome
+    const differenceData = keys.map(
+      (key) => groupedData[key]?.income - groupedData[key]?.outcome || 0
+    )
 
-    // Clear canvas
-    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
-
-    // Set dimensions
     const width = canvasRef.current.width
     const height = canvasRef.current.height
     const padding = 40
     const chartWidth = width - padding * 2
     const chartHeight = height - padding * 2
+    const maxValue = Math.max(...differenceData) || 1
 
-    // Find max value for scaling
-    const maxValue = Math.max(...incomeData, ...outcomeData) || 1 // Prevent division by zero
+    ctx.clearRect(0, 0, width, height)
 
-    // Draw axes
     ctx.beginPath()
     ctx.strokeStyle = "#e5e7eb"
     ctx.moveTo(padding, padding)
@@ -174,49 +164,24 @@ export function FinanceChart({ data, timePeriod }: FinanceChartProps) {
     ctx.lineTo(width - padding, height - padding)
     ctx.stroke()
 
-    // Draw income line
+    // Gambar garis untuk selisih (income - outcome)
     ctx.beginPath()
-    ctx.strokeStyle = "#10b981"
+    ctx.strokeStyle = "#3b82f6" // Warna garis untuk selisih (misalnya biru)
     ctx.lineWidth = 2
 
-    labels.forEach((_, i) => {
-      const x = padding + (i * chartWidth) / (labels.length - 1 || 1)
-      const y = height - padding - (incomeData[i] / maxValue) * chartHeight
-
-      if (i === 0) {
-        ctx.moveTo(x, y)
-      } else {
-        ctx.lineTo(x, y)
-      }
+    keys.forEach((_, i) => {
+      const x = padding + (i * chartWidth) / (keys.length - 1 || 1)
+      const y = height - padding - (differenceData[i] / maxValue) * chartHeight
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
     })
 
     ctx.stroke()
 
-    // Draw outcome line
-    ctx.beginPath()
-    ctx.strokeStyle = "#ef4444"
-    ctx.lineWidth = 2
-
-    labels.forEach((_, i) => {
-      const x = padding + (i * chartWidth) / (labels.length - 1 || 1)
-      const y = height - padding - (outcomeData[i] / maxValue) * chartHeight
-
-      if (i === 0) {
-        ctx.moveTo(x, y)
-      } else {
-        ctx.lineTo(x, y)
-      }
-    })
-
-    ctx.stroke()
-
-    // Draw labels
+    // Labels
     ctx.fillStyle = "#6b7280"
     ctx.font = "10px Arial"
     ctx.textAlign = "center"
-
-    // Determine how many labels to show to avoid overcrowding
-    const labelStep = Math.ceil(labels.length / 12) // Show max 12 labels
+    const labelStep = Math.ceil(labels.length / 12)
 
     labels.forEach((label, i) => {
       if (i % labelStep === 0 || i === labels.length - 1) {
@@ -225,69 +190,33 @@ export function FinanceChart({ data, timePeriod }: FinanceChartProps) {
       }
     })
 
-    // Draw dots and tooltips for data points
-    // For day/week/month views, highlight the current point
-    // For year view, highlight the current month
+    let highlightIndex = -1
+    if (timePeriod === "day") highlightIndex = now.getHours()
+    else if (timePeriod === "week") highlightIndex = keys.length - 1
+    else if (timePeriod === "month") highlightIndex = now.getDate() - 1
+    else if (timePeriod === "year") highlightIndex = now.getMonth()
 
-    let highlightIndex: number
-
-    switch (timePeriod) {
-      case "day":
-        highlightIndex = now.getHours()
-        break
-      case "week":
-        highlightIndex = 6 // Last day (today)
-        break
-      case "month":
-        highlightIndex = now.getDate() - 1
-        break
-      case "year":
-        highlightIndex = now.getMonth()
-        break
-      default:
-        highlightIndex = -1
-    }
-
-    if (highlightIndex >= 0 && highlightIndex < labels.length) {
-      if (incomeData[highlightIndex] > 0) {
-        const x = padding + (highlightIndex * chartWidth) / (labels.length - 1 || 1)
-        const y = height - padding - (incomeData[highlightIndex] / maxValue) * chartHeight
+    if (highlightIndex >= 0 && highlightIndex < keys.length) {
+      const drawPoint = (value: number, color: string) => {
+        const x = padding + (highlightIndex * chartWidth) / (keys.length - 1 || 1)
+        const y = height - padding - (value / maxValue) * chartHeight
 
         ctx.beginPath()
-        ctx.fillStyle = "#10b981"
+        ctx.fillStyle = color
         ctx.arc(x, y, 5, 0, Math.PI * 2)
         ctx.fill()
 
-        // Draw tooltip for income
-        ctx.fillStyle = "rgba(255, 255, 255, 0.9)"
+        ctx.fillStyle = "rgba(255,255,255,0.9)"
         ctx.fillRect(x - 40, y - 30, 80, 20)
-        ctx.strokeStyle = "#10b981"
+        ctx.strokeStyle = color
         ctx.strokeRect(x - 40, y - 30, 80, 20)
 
-        ctx.fillStyle = "#10b981"
+        ctx.fillStyle = color
         ctx.textAlign = "center"
-        ctx.fillText(`Rp ${incomeData[highlightIndex].toLocaleString()}`, x, y - 15)
+        ctx.fillText(`Rp ${value.toLocaleString()}`, x, y - 15)
       }
 
-      if (outcomeData[highlightIndex] > 0) {
-        const x = padding + (highlightIndex * chartWidth) / (labels.length - 1 || 1)
-        const y = height - padding - (outcomeData[highlightIndex] / maxValue) * chartHeight
-
-        ctx.beginPath()
-        ctx.fillStyle = "#ef4444"
-        ctx.arc(x, y, 5, 0, Math.PI * 2)
-        ctx.fill()
-
-        // Draw tooltip for outcome
-        ctx.fillStyle = "rgba(255, 255, 255, 0.9)"
-        ctx.fillRect(x - 40, y - 30, 80, 20)
-        ctx.strokeStyle = "#ef4444"
-        ctx.strokeRect(x - 40, y - 30, 80, 20)
-
-        ctx.fillStyle = "#ef4444"
-        ctx.textAlign = "center"
-        ctx.fillText(`Rp ${outcomeData[highlightIndex].toLocaleString()}`, x, y - 15)
-      }
+      if (differenceData[highlightIndex] > 0) drawPoint(differenceData[highlightIndex], "#3b82f6")
     }
   }, [data, timePeriod])
 
@@ -302,4 +231,3 @@ export function FinanceChart({ data, timePeriod }: FinanceChartProps) {
     </div>
   )
 }
-

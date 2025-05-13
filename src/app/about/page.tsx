@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth';
 import { UserDetailResponse } from '@/types/user';
 import { getServerSession } from 'next-auth';
 import React from 'react'
-import Navbar from '@/components/landing/Navbar';
+import Navbar from '@/components/Home/Navbar';
 
 
 

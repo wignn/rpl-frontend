@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 import type { RoomDetailResponse, RoomTypeResponse } from "@/types/room";
-import AlertMessage from "../alert/alertMessage";
 
 enum ROOMSTATUS {
   AVAILABLE = "AVAILABLE",
@@ -15,8 +14,9 @@ enum ROOMSTATUS {
 interface RoomModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  showAlert: (type: "success" | "error", message: string) => void;
   room?: RoomDetailResponse;
+  onRefresh: () => void;
   accessToken: string;
   roomTypes?: RoomTypeResponse[];
 }
@@ -29,22 +29,17 @@ interface RoomFormData {
 export default function RoomModal({
   isOpen,
   onClose,
-  onSuccess,
+  showAlert,
   room,
+  onRefresh,
   roomTypes = [],
   accessToken,
 }: RoomModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isUpdateMode = !!room;
-
   const [formData, setFormData] = useState<RoomFormData>({
     roomType: "",
     status: ROOMSTATUS.AVAILABLE,
-  });
-  const [alert, setAlert] = useState({
-    type: "success" as "success" | "error",
-    message: "",
-    isOpen: false,
   });
 
   useEffect(() => {
@@ -53,13 +48,10 @@ export default function RoomModal({
         roomType: room.id_roomtype || "",
         status: (room.status as ROOMSTATUS) || ROOMSTATUS.AVAILABLE,
       });
-      console.log("Room data:", room);
     } else {
       resetForm();
     }
   }, [room, isOpen]);
-
-
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -72,25 +64,16 @@ export default function RoomModal({
       [name]: value,
     }));
   };
-  const showAlert = (type: "success" | "error", message: string) => {
-    setAlert({
-      type,
-      message,
-      isOpen: true,
-    });
-  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    try {
+   try {
       const requestData = {
         id_roomtype: formData.roomType,
         status: formData.status,
       };
-
       let res;
-
       if (isUpdateMode && room?.id_room) {
         res = await apiRequest({
           endpoint: `/room/${room.id_room}`,
@@ -103,7 +86,6 @@ export default function RoomModal({
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        
       } else {
         res = await apiRequest({
           endpoint: "/room",
@@ -116,26 +98,24 @@ export default function RoomModal({
       }
 
       if (res) {
+        resetForm();
+        onClose();
+        onRefresh();
         showAlert(
           "success",
           isUpdateMode
-            ? "Kamar berhasil diperbarui"
-            : "Kamar berhasil ditambahkan"
+            ? "Kamar berhasil diperbarui."
+            : "Kamar baru berhasil ditambahkan."
         );
-        resetForm()
-        onClose()
-
-        if (onSuccess) onSuccess()
       }
-      
     } catch (error) {
-      console.error("Error submitting form:", error);
       showAlert(
         "error",
-        `Gagal ${
-          isUpdateMode ? "memperbarui" : "menambahkan"
-        } kamar. Silakan coba lagi.`
+        isUpdateMode
+          ? "Gagal memperbarui kamar. Silakan coba lagi."
+          : "Gagal menambahkan kamar baru. Silakan coba lagi."
       );
+      console.error("Error submitting form:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -169,7 +149,7 @@ export default function RoomModal({
         <div className="p-6">
           <form onSubmit={handleSubmit}>
             <div className="space-y-6">
-                <div className="space-y-2">
+              <div className="space-y-2">
                 <label
                   htmlFor="roomType"
                   className="block text-sm font-medium text-gray-700"
@@ -177,24 +157,24 @@ export default function RoomModal({
                   Tipe Kamar
                 </label>
 
-                  <select
+                <select
                   id="roomType"
                   name="roomType"
                   value={formData.roomType}
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   required
-                  >
+                >
                   <option value="" disabled>
                     Pilih tipe kamar
                   </option>
                   {roomTypes.map((type) => (
                     <option key={type.id_roomtype} value={type.id_roomtype}>
-                    {type.room_type} - Rp{type.price.toLocaleString("id-ID")}
+                      {type.room_type} - Rp{type.price.toLocaleString("id-ID")}
                     </option>
                   ))}
                 </select>
-                </div>
+              </div>
 
               <div className="space-y-2">
                 <label
@@ -243,12 +223,6 @@ export default function RoomModal({
           </form>
         </div>
       </div>
-      <AlertMessage
-        type={alert.type}
-        message={alert.message}
-        isOpen={alert.isOpen}
-        onClose={() => setAlert({ ...alert, isOpen: false })}
-      />
     </div>
   );
 }

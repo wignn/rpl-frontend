@@ -10,6 +10,7 @@ import AlertMessage from "@/components/alert/alertMessage"
 interface ReportTableProps extends PaginatedReportResponse {
   onPageChange: (page: number) => void
   accessToken: string
+  showAlert: (type: "success" | "error", message: string) => void
   onRefresh: () => void
 }
 
@@ -18,6 +19,7 @@ export default function ReportTable({
   currentPage,
   totalPages,
   onPageChange,
+  showAlert,
   onRefresh,
   accessToken,
 }: ReportTableProps) {
@@ -172,6 +174,7 @@ export default function ReportTable({
           currentStatus={editingReport.status}
           onStatusUpdated={handleStatusUpdated}
           accessToken={accessToken}
+          showAlert={showAlert}
         />
       )}
 

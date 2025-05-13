@@ -6,9 +6,11 @@ import type { FinanceDetailsResponse } from "@/types/finance"
 import { apiRequest } from "@/lib/api"
 
 interface TransactionModalProps {
-  onClose: () => void
   transaction: FinanceDetailsResponse | null
-  onSave: (transaction: FinanceDetailsResponse) => void
+  onClose: () => void
+  showAlert: (type: "success" | "error", message: string) => void
+  onRefresh: () => void
+  accessToken: string
 }
 
 enum INOUT {
@@ -35,7 +37,7 @@ interface Tenant {
     }
 }
 
-export function TransactionModal({ onClose, transaction, onSave }: TransactionModalProps) {
+export function TransactionModal({ onClose, transaction, accessToken,showAlert, onRefresh }: TransactionModalProps) {
   const isEditing = !!transaction
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -51,8 +53,8 @@ export function TransactionModal({ onClose, transaction, onSave }: TransactionMo
     id_tenant: transaction?.id_tenant || "",
     id_rent: transaction?.id_rent || "",
   })
+  
 
-  // Fetch tenants data
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
@@ -60,6 +62,9 @@ export function TransactionModal({ onClose, transaction, onSave }: TransactionMo
         const tenantsData = await apiRequest<Tenant[]>({
           endpoint: "/tenant",
           method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          }
         })
 
         if (tenantsData) {
@@ -75,7 +80,6 @@ export function TransactionModal({ onClose, transaction, onSave }: TransactionMo
     fetchData()
   }, [])
 
-  // Auto-update id_rent when tenant changes
   useEffect(() => {
     const selectedTenant = tenants.find(t => t.id_tenant === formData.id_tenant)
     if (selectedTenant?.room?.id_room) {
@@ -83,8 +87,6 @@ export function TransactionModal({ onClose, transaction, onSave }: TransactionMo
         ...prev,
         id_rent: selectedTenant.rent?.id_rent || "",
       }))
-      console.log("Selected tenant ID:", selectedTenant)
-      console.log("Selected tenant room ID:", selectedTenant.room.id_room)
     }
   }, [formData.id_tenant, tenants])
 
@@ -96,15 +98,41 @@ export function TransactionModal({ onClose, transaction, onSave }: TransactionMo
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    const submissionData = {
+    const payload = {
       ...formData,
-      amount: Number.parseFloat(formData.amount),
-    } as unknown as FinanceDetailsResponse
+      amount: parseFloat(formData.amount),
+    }
 
-    onSave(submissionData)
+    try {
+      const res = await apiRequest<FinanceDetailsResponse>({
+        endpoint: isEditing ? `/finance/${formData.id_finance}` : "/finance",
+        method: isEditing ? "PUT" : "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: {
+          id_tenant: payload.id_tenant,
+          id_rent: payload.id_rent,
+          type: payload.type,
+          category: payload.category,
+          amount: payload.amount,
+          payment_date: payload.payment_date,
+        },
+      })
+
+      if (res) {
+        showAlert("success", "Transaksi berhasil disimpan.")
+        onRefresh()
+        onClose()
+      } else {
+        showAlert("error", "Gagal menyimpan transaksi. Silakan coba lagi.")
+      }
+    } catch (err) {
+      console.error("Gagal menyimpan transaksi:", err)
+      showAlert("error", "Terjadi kesalahan saat menyimpan transaksi.")
+    }
   }
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {

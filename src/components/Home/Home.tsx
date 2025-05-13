@@ -1,7 +1,7 @@
 "use client";
 import type { RoomTypeResponse } from "@/types/room";
 import Image from "next/image";
-import RoomTypeCard from "@/components/landing/Card";
+import RoomTypeCard from "@/components/Home/Card";
 import Link from "next/link";
 import { UserDetailResponse } from "@/types/user";
 import Navbar from "./Navbar";

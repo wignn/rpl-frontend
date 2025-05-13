@@ -10,7 +10,7 @@ import {
   RefreshCw,
   Filter,
 } from "lucide-react";
-import TenantDetailModal from "./TenantDetailModal";
+import RecordDetailModal from "@/components/dasbord/record/RecordDetailModal";
 import { apiRequest } from "@/lib/api";
 import LoadingSkeleton from "@/components/sekleton/RecordSkeleton";
 
@@ -374,7 +374,7 @@ export default function RecordContent({
         </div>
       )}
 
-      <TenantDetailModal
+      <RecordDetailModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         tenant={selectedTenant}

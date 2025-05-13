@@ -1,7 +1,7 @@
 import { apiRequest } from '@/lib/api';
 import { RoomTypeResponse } from '@/types/room'
 import React from 'react'
-import Home from '@/components/landing/Home'  ;
+import Home from '@/components/Home/Home'  ;
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { UserDetailResponse } from '@/types/user';

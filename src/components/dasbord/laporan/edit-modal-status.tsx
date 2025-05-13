@@ -12,12 +12,14 @@ interface EditStatusModalProps {
   currentStatus: string
   onStatusUpdated: () => void
   OnRefresh: () => void
+  showAlert: (type: "success" | "error", message: string) => void
   accessToken: string
 }
 
 export function EditStatusModal({
   isOpen,
   onClose,
+  showAlert,
   reportId,
   currentStatus,
   OnRefresh,
@@ -28,7 +30,6 @@ export function EditStatusModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
 
-  // Close modal when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -45,7 +46,6 @@ export function EditStatusModal({
     }
   }, [isOpen, onClose])
 
-  // Handle ESC key press
   useEffect(() => {
     function handleEscKey(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -70,7 +70,7 @@ export function EditStatusModal({
         onClose()
         return
       }
-      await apiRequest<ReportUpdateRequest>({
+      const res =  await apiRequest<ReportUpdateRequest>({
         endpoint: `/report/${reportId}`,
         method: "PUT",
         body: { status: status.toUpperCase() },
@@ -78,11 +78,21 @@ export function EditStatusModal({
           Authorization: `Bearer ${accessToken}`,
         },
       })
+      if (res) {
+        showAlert(
+          "success",
+          "Status berhasil di simpan."
+        )
+        onStatusUpdated()
+        OnRefresh()
+        onClose()
+      }else {
+        showAlert("error", "Gagal memperbarui status. Silakan coba lagi.")
+      }
 
-      OnRefresh()
-      onStatusUpdated()
-      onClose()
+
     } catch (error) {
+      showAlert("error", "Gagal memperbarui status. Silakan coba lagi.")
       console.error("Failed to update status:", error)
     } finally {
       setIsSubmitting(false)

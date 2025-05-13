@@ -2,7 +2,7 @@ import PropertyDetail from "@/components/guest/roomType"
 import { apiRequest } from "@/lib/api"
 import type { RoomTypeResponse } from "@/types/room"
 import { notFound } from "next/navigation"
-import Header from "@/components/landing/Navbar"
+import Header from "@/components/Home/Navbar"
 
 async function Page({ params }: { params:  Promise<{ id: string }> }) {
   let roomType: RoomTypeResponse | null = null

@@ -1,116 +1,123 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { X } from 'lucide-react'
-import { apiRequest } from "@/lib/api"
-import AlertMessage from "@/components/alert/alertMessage"
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import { apiRequest } from "@/lib/api";
 
 interface Facility {
-  id_fasility: string
-  facility_name: string
-  desc: string
-  status?: string
-  created_at: string
-  updated_at: string
+  id_fasility: string;
+  facility_name: string;
+  desc: string;
+  status?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface FacilityModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSuccess?: () => void
-  facility: Facility | null
-  accessToken: string
+  isOpen: boolean;
+  onClose: () => void;
+  onRefresh: () => void;
+  showAlert: (type: "success" | "error", message: string) => void;
+  facility: Facility | null;
+  accessToken: string;
 }
 
-export default function FacilityModal({ isOpen, onClose, onSuccess, facility, accessToken }: FacilityModalProps) {
-  const isUpdateMode = !!facility
+export default function FacilityModal({
+  isOpen,
+  onClose,
+  showAlert,
+  onRefresh,
+  facility,
+  accessToken,
+}: FacilityModalProps) {
+  const isUpdateMode = !!facility;
   const [formData, setFormData] = useState({
     facility_name: "",
     desc: "",
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [alert, setAlert] = useState({
-    type: "success" as "success" | "error",
-    message: "",
-    isOpen: false,
-  })
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (facility) {
       setFormData({
         facility_name: facility.facility_name || "",
         desc: facility.desc || "",
-      })
+      });
     } else {
-      resetForm()
+      resetForm();
     }
-  }, [facility, isOpen])
+  }, [facility, isOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
-
-  const showAlert = (type: "success" | "error", message: string) => {
-    setAlert({
-      type,
-      message,
-      isOpen: true,
-    })
-  }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
+    e.preventDefault();
+    setIsSubmitting(true);
+    let res;
     try {
       if (isUpdateMode && facility) {
-        await apiRequest({
+        res = await apiRequest({
           endpoint: `/facility/${facility.id_fasility}`,
           method: "PUT",
           body: formData,
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        })
-        showAlert("success", "Fasilitas berhasil diperbarui")
+        });
+        showAlert("success", "Fasilitas berhasil diperbarui");
       } else {
-
-        await apiRequest({
+        res = await apiRequest({
           endpoint: "/facility",
           method: "POST",
           body: formData,
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        })
-        showAlert("success", "Fasilitas berhasil ditambahkan")
+        });
       }
 
-      setTimeout(() => {
-        resetForm()
-        onClose()
-        if (onSuccess) onSuccess()
-      }, 1500)
+      if (res) {
+        showAlert("success", "Fasilitas berhasil simpan");
+        resetForm();
+        onClose();
+        onRefresh();
+      } else {
+        showAlert(
+          "error",
+          `Gagal ${
+            isUpdateMode ? "memperbarui" : "menambahkan"
+          } fasilitas. Silakan coba lagi.`
+        );
+      }
     } catch (error) {
-      console.error("Error submitting form:", error)
-      showAlert("error", `Gagal ${isUpdateMode ? "memperbarui" : "menambahkan"} fasilitas. Silakan coba lagi.`)
+      console.error("Error submitting form:", error);
+      showAlert(
+        "error",
+        `Gagal ${
+          isUpdateMode ? "memperbarui" : "menambahkan"
+        } fasilitas. Silakan coba lagi.`
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const resetForm = () => {
     setFormData({
       facility_name: "",
       desc: "",
-    })
-  }
+    });
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <>
@@ -120,7 +127,11 @@ export default function FacilityModal({ isOpen, onClose, onSuccess, facility, ac
             <h2 className="text-xl font-semibold text-gray-800">
               {isUpdateMode ? "Edit Fasilitas" : "Tambah Fasilitas Baru"}
             </h2>
-            <button title="Close" onClick={onClose} className="p-1 rounded-full hover:bg-gray-100">
+            <button
+              title="Close"
+              onClick={onClose}
+              className="p-1 rounded-full hover:bg-gray-100"
+            >
               <X className="w-6 h-6 text-gray-500" />
             </button>
           </div>
@@ -130,7 +141,10 @@ export default function FacilityModal({ isOpen, onClose, onSuccess, facility, ac
               <div className="space-y-4">
                 {/* Nama Fasilitas */}
                 <div>
-                  <label htmlFor="facility_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="facility_name"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Nama Fasilitas
                   </label>
                   <input
@@ -147,7 +161,10 @@ export default function FacilityModal({ isOpen, onClose, onSuccess, facility, ac
 
                 {/* Deskripsi */}
                 <div>
-                  <label htmlFor="desc" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="desc"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Deskripsi
                   </label>
                   <textarea
@@ -212,13 +229,6 @@ export default function FacilityModal({ isOpen, onClose, onSuccess, facility, ac
           </div>
         </div>
       </div>
-
-      <AlertMessage
-        type={alert.type}
-        message={alert.message}
-        isOpen={alert.isOpen}
-        onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
-      />
     </>
-  )
+  );
 }

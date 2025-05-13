@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Plus, Edit, Trash, ImageOff } from "lucide-react"
-import RoomTypeModal from "@/components/admin/RoomTypeModal"
+import RoomTypeModal from "@/components/dasbord/roomType/RoomTypeModal"
 import ConfirmDialog from "@/components/alert/confirmDialog"
 import AlertMessage from "@/components/alert/alertMessage"
 import RoomTypeSkeleton from "@/components/sekleton/roomtype"
@@ -17,7 +17,7 @@ interface Props {
   baseUrl: string
 }
 
-export default function RoomsContent({ accessToken, facilities, baseUrl }: Props) {
+export default function RoomsTypeContent({ accessToken, facilities, baseUrl }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedRoomType, setSelectedRoomType] = useState<RoomTypeResponse | undefined>(undefined)
   const [roomTypes, setRoomTypes] = useState<RoomTypeResponse[]>([])
@@ -57,6 +57,13 @@ export default function RoomsContent({ accessToken, facilities, baseUrl }: Props
     isOpen: false,
   })
 
+    const showAlert = (type: "success" | "error", message: string) => {
+    setAlert({
+      type,
+      message,
+      isOpen: true,
+    })
+  }
   const handleAddClick = () => {
     setSelectedRoomType(undefined)
     setIsModalOpen(true)
@@ -72,9 +79,6 @@ export default function RoomsContent({ accessToken, facilities, baseUrl }: Props
     setIsConfirmDialogOpen(true)
   }
 
-  const handleDataChange = () => {
-    fetchRoomTypes()
-  }
 
   const handleConfirmDelete = async () => {
     if (!roomTypeToDelete) return
@@ -90,8 +94,7 @@ export default function RoomsContent({ accessToken, facilities, baseUrl }: Props
         message: "Tipe kamar berhasil dihapus",
         isOpen: true,
       })
-
-      handleDataChange()
+      fetchRoomTypes()
     } catch (error) {
       console.error("Error deleting room type:", error)
       setAlert({
@@ -105,10 +108,7 @@ export default function RoomsContent({ accessToken, facilities, baseUrl }: Props
     }
   }
 
-  const handleSuccess = () => {
-    setIsModalOpen(false)
-    handleDataChange()
-  }
+
 
 
 
@@ -267,7 +267,8 @@ export default function RoomsContent({ accessToken, facilities, baseUrl }: Props
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         facilities={facilities}
-        onSuccess={handleSuccess}
+        showAlert={showAlert}
+        onRefresh={fetchRoomTypes}
         roomType={selectedRoomType}
       />
 

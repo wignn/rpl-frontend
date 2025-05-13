@@ -4,10 +4,8 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { apiRequest } from "@/lib/api";
-
 import type { RoomDetailResponse } from "@/types/room";
 import type { TenantCreateRequest, TenantWithRentAndRoom } from "@/types/tenat";
-import AlertMessage from "../alert/alertMessage";
 
 enum ROOMSTATUS {
   AVAILABLE = "AVAILABLE",
@@ -17,7 +15,8 @@ enum ROOMSTATUS {
 interface TenantModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onRefresh: () => void;
+  showAlert: (type: "success" | "error", message: string) => void;
   tenant?: TenantWithRentAndRoom;
   accessToken?: string;
 }
@@ -25,18 +24,14 @@ interface TenantModalProps {
 export default function TenantModal({
   isOpen,
   onClose,
-  onSuccess,
+  showAlert,
+  onRefresh,
   tenant,
   accessToken,
 }: TenantModalProps) {
   const [rooms, setRooms] = useState<RoomDetailResponse[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isUpdateMode = !!tenant;
-  const [alert, setAlert] = useState({
-    type: "success" as "success" | "error",
-    message: "",
-    isOpen: false,
-  });
 
   const [formData, setFormData] = useState({
     nama: "",
@@ -138,16 +133,6 @@ export default function TenantModal({
             : undefined,
         });
 
-        if (res) {
-          setAlert({
-            type: "success",
-            message: "Penghuni berhasil diperbarui",
-            isOpen: true,
-          });
-          resetForm();
-          onClose();
-          if (onSuccess) onSuccess();
-        }
       } else {
         res = await apiRequest<TenantCreateRequest>({
           endpoint: "/tenant",
@@ -160,16 +145,14 @@ export default function TenantModal({
       }
 
       if (res) {
-        setAlert({
-          type: "success",
-          message: "Penghuni berhasil ditambahkan",
-          isOpen: true,
-        });
-        resetForm();
+        showAlert("success", "Data penghuni berhasil disimpan");
+        onRefresh();
         onClose();
-        if (onSuccess) onSuccess();
+      } else {
+        showAlert("error", "Gagal menyimpan data penghuni. Silakan coba lagi.");
       }
     } catch (error) {
+      showAlert("error", "Gagal menyimpan data penghuni. Silakan coba lagi.");
       console.error("Error submitting form:", error);
     } finally {
       setIsSubmitting(false);
@@ -324,7 +307,6 @@ export default function TenantModal({
                 </select>
               </div>
 
-              {/* No KTP */}
               <div className="space-y-2">
                 <label
                   htmlFor="noKtp"
@@ -387,7 +369,7 @@ export default function TenantModal({
                 type="button"
                 onClick={onClose}
                 className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                disabled={isSubmitting}
+                disabled={isSubmitting} 
               >
                 Batal
               </button>
@@ -406,12 +388,6 @@ export default function TenantModal({
           </form>
         </div>
       </div>
-      <AlertMessage
-        type={alert.type}
-        message={alert.message}
-        isOpen={alert.isOpen}
-        onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
-      />
     </div>
   );
 }

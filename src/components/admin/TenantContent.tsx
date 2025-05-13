@@ -3,7 +3,7 @@
 import type { TenantWithRentAndRoom } from "@/types/tenat"
 import { Plus, Edit, Trash } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
-import TenantModal from "./TenatModal"
+import TenantModal from "@/components/dasbord/Tenant/TenatModal"
 import { apiRequest } from "@/lib/api"
 import TenantSkeleton from "@/components/sekleton/tenant"
 import ConfirmDialog from "@/components/alert/confirmDialog"
@@ -20,11 +20,13 @@ export default function UsersContent({ accessToken }: Props) {
   const [selectedTenant, setSelectedTenant] = useState<TenantWithRentAndRoom | undefined>(undefined)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const [tenantToDelete, setTenantToDelete] = useState<TenantWithRentAndRoom | null>(null)
+ 
   const [alert, setAlert] = useState({
     type: "success" as "success" | "error",
     message: "",
     isOpen: false,
   })
+
 
   const fetchTenants = useCallback(async () => {
     setIsLoading(true)
@@ -36,7 +38,6 @@ export default function UsersContent({ accessToken }: Props) {
           Authorization: `Bearer ${accessToken}`,
         },
       })
-
       setTenants(response)
     } catch (error) {
       console.error("Error fetching tenants:", error)
@@ -96,10 +97,6 @@ export default function UsersContent({ accessToken }: Props) {
     })
   }
 
-  const handleSuccess = () => {
-    fetchTenants()
-    setIsModalOpen(false)
-  }
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "-"
@@ -218,7 +215,8 @@ export default function UsersContent({ accessToken }: Props) {
       <TenantModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={handleSuccess}
+        showAlert={showAlert}
+        onRefresh={fetchTenants}
         tenant={selectedTenant}
         accessToken={accessToken}
       />
@@ -232,6 +230,7 @@ export default function UsersContent({ accessToken }: Props) {
         confirmButtonClass="bg-red-500 hover:bg-red-600"
         onConfirm={handleConfirmDelete}
         onCancel={() => setIsConfirmDialogOpen(false)}
+
       />
 
       <AlertMessage

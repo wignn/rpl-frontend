@@ -4,7 +4,7 @@ import type { UserDetailResponse } from "@/types/user"
 import Link from "next/link"
 import { signOut } from "next-auth/react"
 import { useState } from "react"
-import { Menu, X } from "lucide-react"
+import { Menu, X, Home } from 'lucide-react'
 
 interface HeaderProps {
   tipeKamarHref: string
@@ -27,7 +27,14 @@ const Header = ({ tipeKamarHref, user }: HeaderProps) => {
 
   return (
     <header className="py-4 px-4 md:px-8 border-b border-gray-300 shadow-md relative">
-      <div className="flex justify-between items-center md:justify-center md:gap-6">
+      <div className="container mx-auto flex items-center justify-between">
+        {/* Kost name on the left */}
+        <div className="flex-shrink-0">
+          <Link href="/" className="font-bold text-green-600 text-xl">
+            Nama Kost
+          </Link>
+        </div>
+
         {/* Mobile menu button */}
         <button
           className="md:hidden text-gray-800"
@@ -37,11 +44,12 @@ const Header = ({ tipeKamarHref, user }: HeaderProps) => {
           {!isMenuOpen && <Menu size={24} />}
         </button>
 
-        {/* Logo or brand name could go here */}
-        <div className="md:hidden">{/* Mobile placeholder for center alignment */}</div>
-
-        {/* Desktop navigation */}
-        <div className="hidden md:flex items-center gap-6">
+        {/* Desktop navigation - centered */}
+        <div className="hidden md:flex items-center justify-center gap-6 flex-1">
+          <Link href="/" className="font-medium text-gray-800 hover:text-green-700 flex items-center gap-1">
+            <Home size={18} />
+            <span>Home</span>
+          </Link>
           <Link href="/about" className="font-medium text-gray-800 hover:text-green-700">
             Tentang Kami
           </Link>
@@ -60,7 +68,10 @@ const Header = ({ tipeKamarHref, user }: HeaderProps) => {
               Manage Data
             </Link>
           )}
+        </div>
 
+        {/* Login/Logout button on the right */}
+        <div className="hidden md:block flex-shrink-0">
           {user ? (
             <button
               onClick={handleSignOut}
@@ -87,6 +98,14 @@ const Header = ({ tipeKamarHref, user }: HeaderProps) => {
             </button>
 
             <div className="flex flex-col items-center pt-16 pb-8 px-4 space-y-6">
+              <Link
+                href="/"
+                className="font-medium text-gray-800 hover:text-green-700 text-lg flex items-center gap-1"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Home size={18} />
+                <span>Home</span>
+              </Link>
               <Link
                 href="/about"
                 className="font-medium text-gray-800 hover:text-green-700 text-lg"

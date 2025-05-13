@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Plus, Edit, Trash, Search, RefreshCw } from "lucide-react"
 import { apiRequest } from "@/lib/api"
-import FacilityModal from "./FasilityModal"
+import FacilityModal from "@/components/dasbord/fasility/FasilityModal"
 import ConfirmDialog from "@/components/alert/confirmDialog"
 import AlertMessage from "@/components/alert/alertMessage"
 import FacilitySkeleton from "@/components/sekleton/facilitySkeleton"
@@ -34,6 +34,14 @@ export default function FacilityContent({ accessToken }: { accessToken: string }
     isOpen: false,
   })
 
+  const showAlert = (type: "success" | "error", message: string) => {
+    setAlert({
+      type,
+      message,
+      isOpen: true,
+    })
+  }
+
 const fetchFacilities = useCallback(async () => {
   setIsLoading(true)
   setError(null)
@@ -54,10 +62,9 @@ const fetchFacilities = useCallback(async () => {
   }
 }, [accessToken])
 
-useEffect(() => {
-  fetchFacilities()
-}, [fetchFacilities])
-
+  useEffect(() => {
+    fetchFacilities()
+  }, [fetchFacilities])
 
   const handleAddClick = () => {
     setSelectedFacility(null)
@@ -92,7 +99,6 @@ useEffect(() => {
         isOpen: true,
       })
 
-      // Refresh data
       fetchFacilities()
     } catch (error) {
       console.error("Error deleting facility:", error)
@@ -105,11 +111,6 @@ useEffect(() => {
       setIsConfirmDialogOpen(false)
       setFacilityToDelete(null)
     }
-  }
-
-  const handleSuccess = () => {
-    setIsModalOpen(false)
-    fetchFacilities()
   }
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,16 +281,15 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Modal for Add/Edit */}
       <FacilityModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={handleSuccess}
+        onRefresh={fetchFacilities}
+        showAlert={showAlert}
         facility={selectedFacility}
         accessToken={accessToken}
       />
 
-      {/* Confirm Dialog for Delete */}
       <ConfirmDialog
         isOpen={isConfirmDialogOpen}
         title="Konfirmasi Hapus"
@@ -301,7 +301,6 @@ useEffect(() => {
         onCancel={() => setIsConfirmDialogOpen(false)}
       />
 
-      {/* Alert Message */}
       <AlertMessage
         type={alert.type}
         message={alert.message}

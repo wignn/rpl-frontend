@@ -36,7 +36,7 @@ interface TenantDetailModalProps {
   tenant: Tenant | null
 }
 
-export default function TenantDetailModal({ isOpen, onClose, tenant }: TenantDetailModalProps) {
+export default function RecordDetailModal({ isOpen, onClose, tenant }: TenantDetailModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

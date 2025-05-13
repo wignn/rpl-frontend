@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Edit, Trash, Home, Check, X } from "lucide-react";
-import RoomModal from "./RoomModal";
+import RoomModal from "@/components/dasbord/room/RoomModal";
 import RoomListSkeleton from "@/components/sekleton/roomList";
 import type { RoomDetailResponse, RoomTypeResponse } from "@/types/room";
 import { apiRequest } from "@/lib/api";
@@ -19,7 +19,7 @@ enum ROOMSTATUS {
   NOTAVAILABLE = "NOTAVAILABLE",
 }
 
-export default function RoomListContent({ accessToken, roomtypes }: Props) {
+export default function RoomContent({ accessToken, roomtypes }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<
     RoomDetailResponse | undefined
@@ -101,11 +101,14 @@ export default function RoomListContent({ accessToken, roomtypes }: Props) {
     setIsModalOpen(true);
   };
 
-  const handleSuccess = () => {
-    console.log("Room added/updated successfully");
-    setIsModalOpen(false);
-    fetchRooms();
-  };
+  const showAlert = (type: "success" | "error", message: string) => {
+    setAlert({
+      type,
+      message,
+      isOpen: true,
+    })
+  }
+
 
 
   if (isLoading) {
@@ -244,6 +247,7 @@ export default function RoomListContent({ accessToken, roomtypes }: Props) {
           ))}
         </div>
       )}
+
       <ConfirmDialog
         isOpen={isConfirmDialogOpen}
         title="Konfirmasi Hapus"
@@ -259,8 +263,9 @@ export default function RoomListContent({ accessToken, roomtypes }: Props) {
         isOpen={isModalOpen}
         roomTypes={roomtypes}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={handleSuccess}
+        showAlert={showAlert}
         room={selectedRoom}
+        onRefresh={fetchRooms}
         accessToken={accessToken}
       />
 
