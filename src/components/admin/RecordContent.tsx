@@ -106,7 +106,6 @@ export default function RecordContent({
       });
     }
 
-    // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
@@ -118,7 +117,6 @@ export default function RecordContent({
       );
     }
 
-    // Apply sorting
     result = [...result].sort((a, b) => {
       let aValue, bValue;
 
@@ -183,6 +181,8 @@ export default function RecordContent({
   if (isLoading) {
     return <LoadingSkeleton />;
   }
+
+  
 
   return (
     <div className="space-y-6">

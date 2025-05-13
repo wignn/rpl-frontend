@@ -143,7 +143,6 @@ export function FinanceChart({ data, timePeriod }: FinanceChartProps) {
       }
     }
 
-    // Hitung selisih antara income dan outcome
     const differenceData = keys.map(
       (key) => groupedData[key]?.income - groupedData[key]?.outcome || 0
     )
@@ -164,15 +163,18 @@ export function FinanceChart({ data, timePeriod }: FinanceChartProps) {
     ctx.lineTo(width - padding, height - padding)
     ctx.stroke()
 
-    // Gambar garis untuk selisih (income - outcome)
     ctx.beginPath()
-    ctx.strokeStyle = "#3b82f6" // Warna garis untuk selisih (misalnya biru)
+    ctx.strokeStyle = "#3b82f6"
     ctx.lineWidth = 2
 
     keys.forEach((_, i) => {
       const x = padding + (i * chartWidth) / (keys.length - 1 || 1)
       const y = height - padding - (differenceData[i] / maxValue) * chartHeight
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+      if (i === 0) {
+        ctx.moveTo(x, y)
+      } else {
+        ctx.lineTo(x, y)
+      }
     })
 
     ctx.stroke()
@@ -216,7 +218,9 @@ export function FinanceChart({ data, timePeriod }: FinanceChartProps) {
         ctx.fillText(`Rp ${value.toLocaleString()}`, x, y - 15)
       }
 
-      if (differenceData[highlightIndex] > 0) drawPoint(differenceData[highlightIndex], "#3b82f6")
+      if (differenceData[highlightIndex] > 0) {
+        drawPoint(differenceData[highlightIndex], "#3b82f6")
+      }
     }
   }, [data, timePeriod])
 

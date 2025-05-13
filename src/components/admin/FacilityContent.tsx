@@ -1,88 +1,97 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { Plus, Edit, Trash, Search, RefreshCw } from "lucide-react"
-import { apiRequest } from "@/lib/api"
-import FacilityModal from "@/components/dasbord/fasility/FasilityModal"
-import ConfirmDialog from "@/components/alert/confirmDialog"
-import AlertMessage from "@/components/alert/alertMessage"
-import FacilitySkeleton from "@/components/sekleton/facilitySkeleton"
-import { useCallback } from "react"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { Plus, Edit, Trash, Search, RefreshCw } from "lucide-react";
+import { apiRequest } from "@/lib/api";
+import FacilityModal from "@/components/dasbord/fasility/FasilityModal";
+import ConfirmDialog from "@/components/alert/confirmDialog";
+import AlertMessage from "@/components/alert/alertMessage";
+import FacilitySkeleton from "@/components/sekleton/facilitySkeleton";
+import { useCallback } from "react";
+import PageError from "../Error/PageError";
 
 interface Facility {
-  id_fasility: string
-  facility_name: string
-  desc: string
-  status?: string
-  created_at: string
-  updated_at: string
+  id_fasility: string;
+  facility_name: string;
+  desc: string;
+  status?: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export default function FacilityContent({ accessToken }: { accessToken: string }) {
-  const [facilities, setFacilities] = useState<Facility[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null)
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
-  const [facilityToDelete, setFacilityToDelete] = useState<Facility | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
+export default function FacilityContent({
+  accessToken,
+}: {
+  accessToken: string;
+}) {
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(
+    null
+  );
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [facilityToDelete, setFacilityToDelete] = useState<Facility | null>(
+    null
+  );
+  const [searchQuery, setSearchQuery] = useState("");
   const [alert, setAlert] = useState({
     type: "success" as "success" | "error",
     message: "",
     isOpen: false,
-  })
+  });
 
   const showAlert = (type: "success" | "error", message: string) => {
     setAlert({
       type,
       message,
       isOpen: true,
-    })
-  }
+    });
+  };
 
-const fetchFacilities = useCallback(async () => {
-  setIsLoading(true)
-  setError(null)
-  try {
-    const response = await apiRequest<Facility[]>({
-      endpoint: "/facility",
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-    setFacilities(response)
-  } catch (error) {
-    console.error("Error fetching facilities:", error)
-    setError("Gagal memuat data fasilitas. Silakan coba lagi.")
-  } finally {
-    setIsLoading(false)
-  }
-}, [accessToken])
+  const fetchFacilities = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await apiRequest<Facility[]>({
+        endpoint: "/facility",
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      setFacilities(response);
+    } catch (error) {
+      console.error("Error fetching facilities:", error);
+      setError("Gagal memuat data fasilitas. Silakan coba lagi.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [accessToken]);
 
   useEffect(() => {
-    fetchFacilities()
-  }, [fetchFacilities])
+    fetchFacilities();
+  }, [fetchFacilities]);
 
   const handleAddClick = () => {
-    setSelectedFacility(null)
-    setIsModalOpen(true)
-  }
+    setSelectedFacility(null);
+    setIsModalOpen(true);
+  };
 
   const handleEditClick = (facility: Facility) => {
-    setSelectedFacility(facility)
-    setIsModalOpen(true)
-  }
+    setSelectedFacility(facility);
+    setIsModalOpen(true);
+  };
 
   const handleDeleteClick = (facility: Facility) => {
-    setFacilityToDelete(facility)
-    setIsConfirmDialogOpen(true)
-  }
+    setFacilityToDelete(facility);
+    setIsConfirmDialogOpen(true);
+  };
 
   const handleConfirmDelete = async () => {
-    if (!facilityToDelete) return
+    if (!facilityToDelete) return;
 
     try {
       await apiRequest({
@@ -91,46 +100,58 @@ const fetchFacilities = useCallback(async () => {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      })
+      });
 
       setAlert({
         type: "success",
         message: "Fasilitas berhasil dihapus",
         isOpen: true,
-      })
+      });
 
-      fetchFacilities()
+      fetchFacilities();
     } catch (error) {
-      console.error("Error deleting facility:", error)
+      console.error("Error deleting facility:", error);
       setAlert({
         type: "error",
         message: "Gagal menghapus fasilitas. Silakan coba lagi.",
         isOpen: true,
-      })
+      });
     } finally {
-      setIsConfirmDialogOpen(false)
-      setFacilityToDelete(null)
+      setIsConfirmDialogOpen(false);
+      setFacilityToDelete(null);
     }
-  }
+  };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
-  }
+    setSearchQuery(e.target.value);
+  };
 
   const filteredFacilities = facilities.filter(
     (facility) =>
-      facility.facility_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      facility.desc.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      facility.facility_name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      facility.desc.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (isLoading) {
-    return <FacilitySkeleton />
+    return <FacilitySkeleton />;
+  }
+  if (error) {
+    return (
+      <PageError
+        error="Gagal memuat data fasilitas. Silakan coba lagi."
+        onRefresh={fetchFacilities}
+      />
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-800">Manajemen Fasilitas</h2>
+        <h2 className="text-2xl font-bold text-gray-800">
+          Manajemen Fasilitas
+        </h2>
         <button
           onClick={handleAddClick}
           className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
@@ -162,16 +183,8 @@ const fetchFacilities = useCallback(async () => {
         </button>
       </div>
 
-      {error ? (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <div className="text-red-500 mb-2">⚠️ {error}</div>
-          <button
-            onClick={fetchFacilities}
-            className="mt-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
-          >
-            Coba Lagi
-          </button>
-        </div>
+      {error && !isLoading ?  (
+        <PageError error={error} onRefresh={fetchFacilities} />
       ) : facilities.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-8 text-center">
           <div className="text-gray-400 mb-4">
@@ -190,8 +203,12 @@ const fetchFacilities = useCallback(async () => {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Belum ada fasilitas</h3>
-          <p className="text-gray-500 mb-4">Tambahkan fasilitas baru untuk mulai mengelola fasilitas kost Anda</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Belum ada fasilitas
+          </h3>
+          <p className="text-gray-500 mb-4">
+            Tambahkan fasilitas baru untuk mulai mengelola fasilitas kost Anda
+          </p>
           <button
             onClick={handleAddClick}
             className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg inline-flex items-center"
@@ -227,27 +244,37 @@ const fetchFacilities = useCallback(async () => {
                 {filteredFacilities.map((facility) => (
                   <tr key={facility.id_fasility} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{facility.facility_name}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {facility.facility_name}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500 line-clamp-2">{facility.desc}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {new Date(facility.created_at).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
+                      <div className="text-sm text-gray-500 line-clamp-2">
+                        {facility.desc}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">
-                        {new Date(facility.updated_at).toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
+                        {new Date(facility.created_at).toLocaleDateString(
+                          "id-ID",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          }
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">
+                        {new Date(facility.updated_at).toLocaleDateString(
+                          "id-ID",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          }
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -308,5 +335,5 @@ const fetchFacilities = useCallback(async () => {
         onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
       />
     </div>
-  )
+  );
 }

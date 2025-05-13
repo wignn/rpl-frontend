@@ -2,11 +2,28 @@
 
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
-import { X, Upload, ImageIcon } from "lucide-react";
+import { X, Upload, ImageIcon } from 'lucide-react';
 import { apiRequest, fileRequest } from "@/lib/api";
 import type { RoomTypeResponse } from "@/types/room";
 import type { FacilityDetailResponse } from "@/types/facility";
 import Image from "next/image";
+import { z } from "zod";
+
+const roomTypeFormSchema = z.object({  
+  roomType: z.string().min(3, "Nama tipe kamar wajib diisi"),
+  price: z
+    .string()
+    .min(3, "Harga wajib diisi")
+    .refine((val) => !isNaN(Number(val.replace(/[^\d]/g, ""))), {
+      message: "Harga harus berupa angka valid",
+    })
+    .refine((val) => Number(val.replace(/[^\d]/g, "")) > 0, {
+      message: "Harga harus lebih dari 0",
+    }),
+  facilities: z.array(z.string()),
+});
+
+type FormData = z.infer<typeof roomTypeFormSchema>;
 
 interface RoomTypeModalProps {
   isOpen: boolean;
@@ -29,17 +46,18 @@ export default function RoomTypeModal({
 }: RoomTypeModalProps) {
   const isUpdateMode = !!roomType;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<FormData>({
     roomType: "",
     price: "",
     facilities: [] as string[],
   });
 
-
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -47,7 +65,7 @@ export default function RoomTypeModal({
       setFormData({
         roomType: roomType.room_type || "",
         price: roomType.price
-          ? `Rp ${Number(roomType.price).toLocaleString("id-ID")}`
+          ? formatPrice(roomType.price)
           : "",
         facilities:
           roomType.facility?.map(
@@ -73,6 +91,14 @@ export default function RoomTypeModal({
       ...prev,
       [name]: value,
     }));
+
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const handleFacilityChange = (facilityId: string) => {
@@ -92,22 +118,62 @@ export default function RoomTypeModal({
     });
   };
 
+  const validateForm = (): boolean => {
+    try {
+      roomTypeFormSchema.parse(formData);
+      setErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            newErrors[err.path[0].toString()] = err.message;
+          }
+        });
+        setErrors(newErrors);
+      }
+      return false;
+    }
+  };
+
+  const validateImage = (): boolean => {
+    // If we're in update mode and no new image is selected, but we have an existing image
+    if (isUpdateMode && !selectedImage && uploadedImageUrl) {
+      setImageError(null);
+      return true;
+    }
+
+    // If no image is selected at all
+    if (!selectedImage) {
+      setImageError("Gambar wajib diunggah");
+      return false;
+    }
+
+    setImageError(null);
+    return true;
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
 
+      // Check file type
       if (!file.type.startsWith("image/")) {
-        showAlert("error", "File harus berupa gambar (JPG, PNG, dll)");
+        setImageError("File harus berupa gambar (JPG, PNG, dll)");
         return;
       }
+      
+      // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        showAlert("error", "Ukuran gambar tidak boleh lebih dari 5MB");
+        setImageError("Ukuran gambar tidak boleh lebih dari 5MB");
         return;
       }
 
       setSelectedImage(file);
+      setImageError(null);
 
+      // Create preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewUrl(reader.result as string);
@@ -147,6 +213,15 @@ export default function RoomTypeModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form and image
+    const isFormValid = validateForm();
+    const isImageValid = validateImage();
+    
+    if (!isFormValid || !isImageValid) {
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -159,9 +234,7 @@ export default function RoomTypeModal({
         }
       }
 
-      const priceAsNumber = Number.parseFloat(
-        formData.price.replace(/[^\d]/g, "")
-      );
+      const priceAsNumber = parseFormattedPrice(formData.price);
 
       const requestData = {
         room_type: formData.roomType,
@@ -173,10 +246,17 @@ export default function RoomTypeModal({
       let res;
 
       if (isUpdateMode && roomType?.id_roomtype) {
-       await fileRequest({
-          endpoint: `${roomType.image}`,
-          method: "DELETE",
-        })
+        if (roomType.image && selectedImage) {
+          try {
+            await fileRequest({
+              endpoint: `${roomType.image}`,
+              method: "DELETE",
+            });
+          } catch (error) {
+            console.error("Error deleting old image:", error);
+            // Continue with update even if image deletion fails
+          }
+        }
 
         res = await apiRequest({
           endpoint: `/roomtype/${roomType.id_roomtype}`,
@@ -190,7 +270,6 @@ export default function RoomTypeModal({
           method: "POST",
           body: requestData,
         });
-        console.log(res);
       }
 
       if (res) {
@@ -198,10 +277,9 @@ export default function RoomTypeModal({
           "success",
           `Tipe kamar berhasil ${isUpdateMode ? "diperbarui" : "ditambahkan"}`
         );
-                onRefresh();
+        onRefresh();
         resetForm();
         onClose();
-        onRefresh();
       }
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -225,23 +303,46 @@ export default function RoomTypeModal({
     setSelectedImage(null);
     setPreviewUrl(null);
     setUploadedImageUrl(null);
+    setErrors({});
+    setImageError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const formatPrice = (value: string) => {
-    const numericValue = value.replace(/[^\d]/g, "");
+  const formatPrice = (value: number | string): string => {
+    const numericValue = typeof value === 'string' 
+      ? value.replace(/[^\d]/g, "") 
+      : value.toString();
+      
     if (numericValue) {
-      return `Rp ${Number.parseInt(numericValue).toLocaleString("id-ID")}`;
+      return `Rp ${Number(numericValue).toLocaleString("id-ID")}`;
     }
     return "";
   };
 
+  // Parse formatted price back to number
+  const parseFormattedPrice = (formattedPrice: string): number => {
+    return Number(formattedPrice.replace(/[^\d]/g, ""));
+  };
+
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    const formattedValue = formatPrice(value);
-    setFormData((prev) => ({ ...prev, price: formattedValue }));
+    // Only allow numeric input
+    const numericValue = value.replace(/[^\d]/g, "");
+    if (numericValue === "" || /^\d+$/.test(numericValue)) {
+      const formattedValue = numericValue === "" ? "" : formatPrice(numericValue);
+      setFormData((prev) => ({ ...prev, price: formattedValue }));
+    }
+    
+    // Clear error when user makes changes
+    if (errors.price) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.price;
+        return newErrors;
+      });
+    }
   };
 
   const triggerFileInput = () => {
@@ -286,9 +387,14 @@ export default function RoomTypeModal({
                     value={formData.roomType}
                     onChange={handleChange}
                     placeholder="Contoh: Tipe A, Deluxe, Standard"
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                      errors.roomType ? "border-red-500" : "border-gray-300"
+                    }`}
                     required
                   />
+                  {errors.roomType && (
+                    <p className="mt-1 text-xs text-red-500">{errors.roomType}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -305,9 +411,14 @@ export default function RoomTypeModal({
                     value={formData.price}
                     onChange={handlePriceChange}
                     placeholder="Rp 0"
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                      errors.price ? "border-red-500" : "border-gray-300"
+                    }`}
                     required
                   />
+                  {errors.price && (
+                    <p className="mt-1 text-xs text-red-500">{errors.price}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -326,14 +437,16 @@ export default function RoomTypeModal({
                     />
 
                     <div
-                      className="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors mb-2"
+                      className={`w-full h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors mb-2 ${
+                        imageError ? "border-red-500" : "border-gray-300"
+                      }`}
                       onClick={triggerFileInput}
                     >
                       {previewUrl ? (
                         <Image
                           width={500}
                           height={500}
-                          src={previewUrl} 
+                          src={previewUrl || "/placeholder.svg"} 
                           alt="Preview"
                           className="h-full w-full object-cover rounded-lg"
                         />
@@ -347,8 +460,8 @@ export default function RoomTypeModal({
                         />
                       ) : (
                         <div className="text-center p-4">
-                          <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                          <p className="mt-1 text-sm text-gray-500">
+                          <ImageIcon className={`mx-auto h-12 w-12 ${imageError ? "text-red-400" : "text-gray-400"}`} />
+                          <p className={`mt-1 text-sm ${imageError ? "text-red-500" : "text-gray-500"}`}>
                             Klik untuk mengunggah gambar
                           </p>
                           <p className="text-xs text-gray-400">
@@ -357,6 +470,10 @@ export default function RoomTypeModal({
                         </div>
                       )}
                     </div>
+
+                    {imageError && (
+                      <p className="mt-1 text-xs text-red-500 self-start">{imageError}</p>
+                    )}
 
                     <button
                       type="button"
@@ -461,7 +578,6 @@ export default function RoomTypeModal({
           </div>
         </div>
       </div>
-
     </>
   );
 }

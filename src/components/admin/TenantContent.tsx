@@ -1,35 +1,37 @@
-"use client"
+"use client";
 
-import type { TenantWithRentAndRoom } from "@/types/tenat"
-import { Plus, Edit, Trash } from "lucide-react"
-import { useCallback, useEffect, useState } from "react"
-import TenantModal from "@/components/dasbord/Tenant/TenatModal"
-import { apiRequest } from "@/lib/api"
-import TenantSkeleton from "@/components/sekleton/tenant"
-import ConfirmDialog from "@/components/alert/confirmDialog"
-import AlertMessage from "@/components/alert/alertMessage"
+import type { TenantWithRentAndRoom } from "@/types/tenat";
+import { Plus, Edit, Trash, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import TenantModal from "@/components/dasbord/Tenant/TenatModal";
+import { apiRequest } from "@/lib/api";
+import TenantSkeleton from "@/components/sekleton/tenant";
+import ConfirmDialog from "@/components/alert/confirmDialog";
+import AlertMessage from "@/components/alert/alertMessage";
 
 interface Props {
-  accessToken: string
+  accessToken: string;
 }
 
 export default function UsersContent({ accessToken }: Props) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [tenants, setTenants] = useState<TenantWithRentAndRoom[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedTenant, setSelectedTenant] = useState<TenantWithRentAndRoom | undefined>(undefined)
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
-  const [tenantToDelete, setTenantToDelete] = useState<TenantWithRentAndRoom | null>(null)
- 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tenants, setTenants] = useState<TenantWithRentAndRoom[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedTenant, setSelectedTenant] = useState<
+    TenantWithRentAndRoom | undefined
+  >(undefined);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [tenantToDelete, setTenantToDelete] =
+    useState<TenantWithRentAndRoom | null>(null);
+
   const [alert, setAlert] = useState({
     type: "success" as "success" | "error",
     message: "",
     isOpen: false,
-  })
-
+  });
 
   const fetchTenants = useCallback(async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await apiRequest<TenantWithRentAndRoom[]>({
         endpoint: "/tenant",
@@ -37,37 +39,36 @@ export default function UsersContent({ accessToken }: Props) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      })
-      setTenants(response)
+      });
+      setTenants(response);
     } catch (error) {
-      console.error("Error fetching tenants:", error)
-      showAlert("error", "Gagal memuat data penghuni. Silakan coba lagi.")
+      console.error("Error fetching tenants:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [accessToken])
+  }, [accessToken]);
 
   useEffect(() => {
-    fetchTenants()
-  }, [fetchTenants])
+    fetchTenants();
+  }, [fetchTenants]);
 
   const handleAddClick = () => {
-    setSelectedTenant(undefined)
-    setIsModalOpen(true)
-  }
+    setSelectedTenant(undefined);
+    setIsModalOpen(true);
+  };
 
   const handleEditClick = (tenant: TenantWithRentAndRoom) => {
-    setSelectedTenant(tenant)
-    setIsModalOpen(true)
-  }
+    setSelectedTenant(tenant);
+    setIsModalOpen(true);
+  };
 
   const handleDeleteClick = (tenant: TenantWithRentAndRoom) => {
-    setTenantToDelete(tenant)
-    setIsConfirmDialogOpen(true)
-  }
+    setTenantToDelete(tenant);
+    setIsConfirmDialogOpen(true);
+  };
 
   const handleConfirmDelete = async () => {
-    if (!tenantToDelete) return
+    if (!tenantToDelete) return;
 
     try {
       await apiRequest({
@@ -76,44 +77,54 @@ export default function UsersContent({ accessToken }: Props) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      })
+      });
 
-      showAlert("success", "Penghuni berhasil dihapus")
-      fetchTenants()
+      showAlert("success", "Penghuni berhasil dihapus");
+      fetchTenants();
     } catch (error) {
-      console.error("Error deleting tenant:", error)
-      showAlert("error", "Gagal menghapus penghuni. Silakan coba lagi.")
+      console.error("Error deleting tenant:", error);
+      showAlert("error", "Gagal menghapus penghuni. Silakan coba lagi.");
     } finally {
-      setIsConfirmDialogOpen(false)
-      setTenantToDelete(null)
+      setIsConfirmDialogOpen(false);
+      setTenantToDelete(null);
     }
-  }
+  };
 
   const showAlert = (type: "success" | "error", message: string) => {
     setAlert({
       type,
       message,
       isOpen: true,
-    })
-  }
-
+    });
+  };
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return "-"
-    return new Date(dateString).toLocaleDateString("id-ID")
-  }
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("id-ID");
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-800">Penghuni</h2>
-        <button
-          onClick={handleAddClick}
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Tambah Penghuni
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={fetchTenants}
+            className="flex items-center justify-center px-4 py-2 border rounded-lg hover:bg-gray-50"
+          >
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+            />
+            <span>{isLoading ? "Memuat..." : "Refresh"}</span>
+          </button>
+          <button
+            onClick={handleAddClick}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Tambah Penghuni
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -147,17 +158,25 @@ export default function UsersContent({ accessToken }: Props) {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                          <span className="text-green-600 font-medium">{item.full_name.charAt(0).toUpperCase()}</span>
+                          <span className="text-green-600 font-medium">
+                            {item.full_name.charAt(0).toUpperCase()}
+                          </span>
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{item.full_name}</div>
-                          <div className="text-sm text-gray-500">{item.no_telp}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {item.full_name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {item.no_telp}
+                          </div>
                         </div>
                       </div>
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{item.room ? item.room.room_name : "-"}</div>
+                      <div className="text-sm text-gray-900">
+                        {item.room ? item.room.room_name : "-"}
+                      </div>
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -197,8 +216,9 @@ export default function UsersContent({ accessToken }: Props) {
           <div className="bg-gray-50 px-6 py-3 flex items-center justify-between">
             <div className="text-sm text-gray-700">
               Menampilkan <span className="font-medium">1</span> sampai{" "}
-              <span className="font-medium">{Math.min(5, tenants.length)}</span> dari{" "}
-              <span className="font-medium">{tenants.length}</span> penghuni
+              <span className="font-medium">{Math.min(5, tenants.length)}</span>{" "}
+              dari <span className="font-medium">{tenants.length}</span>{" "}
+              penghuni
             </div>
             <div className="flex space-x-2">
               <button className="px-3 py-1 border rounded-md bg-white text-gray-700 hover:bg-gray-50">
@@ -230,7 +250,6 @@ export default function UsersContent({ accessToken }: Props) {
         confirmButtonClass="bg-red-500 hover:bg-red-600"
         onConfirm={handleConfirmDelete}
         onCancel={() => setIsConfirmDialogOpen(false)}
-
       />
 
       <AlertMessage
@@ -240,5 +259,5 @@ export default function UsersContent({ accessToken }: Props) {
         onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
       />
     </div>
-  )
+  );
 }

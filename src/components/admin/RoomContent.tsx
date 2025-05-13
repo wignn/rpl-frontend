@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Plus, Edit, Trash, Home, Check, X } from "lucide-react";
+import { Plus, Edit, Trash, Home, Check, X, RefreshCw } from "lucide-react";
 import RoomModal from "@/components/dasbord/room/RoomModal";
 import RoomListSkeleton from "@/components/sekleton/roomList";
 import type { RoomDetailResponse, RoomTypeResponse } from "@/types/room";
 import { apiRequest } from "@/lib/api";
 import ConfirmDialog from "../alert/confirmDialog";
 import AlertMessage from "../alert/alertMessage";
+import PageError from "../Error/PageError";
 
 interface Props {
   accessToken: string;
@@ -86,7 +87,7 @@ export default function RoomContent({ accessToken, roomtypes }: Props) {
     } finally {
       setIsLoading(false);
     }
-  },[accessToken])
+  }, [accessToken]);
   const handleDeleteClick = async (room: RoomDetailResponse) => {
     setIsConfirmDialogOpen(true);
     setSelectedRoom(room);
@@ -94,7 +95,7 @@ export default function RoomContent({ accessToken, roomtypes }: Props) {
 
   useEffect(() => {
     fetchRooms();
-  }, [ fetchRooms]);
+  }, [fetchRooms]);
 
   const handleEditClick = (room: RoomDetailResponse) => {
     setSelectedRoom(room);
@@ -106,20 +107,31 @@ export default function RoomContent({ accessToken, roomtypes }: Props) {
       type,
       message,
       isOpen: true,
-    })
-  }
-
-
+    });
+  };
 
   if (isLoading) {
     return <RoomListSkeleton />;
   }
 
   if (error) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-800">Daftar Kamar</h2>
+    return <PageError error={error} onRefresh={fetchRooms} />
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-800">Daftar Kamar</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={fetchRooms}
+            className="flex items-center justify-center px-4 py-2 border rounded-lg hover:bg-gray-50"
+          >
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+            />
+            <span>{isLoading ? "Memuat..." : "Refresh"}</span>
+          </button>
           <button
             onClick={handleAddClick}
             className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
@@ -128,31 +140,6 @@ export default function RoomContent({ accessToken, roomtypes }: Props) {
             Tambah Kamar
           </button>
         </div>
-
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <div className="text-red-500 mb-2">⚠️ {error}</div>
-          <button
-            onClick={fetchRooms}
-            className="mt-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
-          >
-            Coba Lagi
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-800">Daftar Kamar</h2>
-        <button
-          onClick={handleAddClick}
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Tambah Kamar
-        </button>
       </div>
 
       {rooms.length === 0 ? (

@@ -1,33 +1,41 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { Plus, Edit, Trash, ImageOff } from "lucide-react"
-import RoomTypeModal from "@/components/dasbord/roomType/RoomTypeModal"
-import ConfirmDialog from "@/components/alert/confirmDialog"
-import AlertMessage from "@/components/alert/alertMessage"
-import RoomTypeSkeleton from "@/components/sekleton/roomtype"
-import { apiRequest } from "@/lib/api"
-import type { RoomTypeResponse } from "@/types/room"
-import type { FacilityDetailResponse } from "@/types/facility"
-import Image from "next/image"
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Edit, Trash, ImageOff, RefreshCw } from "lucide-react";
+import RoomTypeModal from "@/components/dasbord/roomType/RoomTypeModal";
+import ConfirmDialog from "@/components/alert/confirmDialog";
+import AlertMessage from "@/components/alert/alertMessage";
+import RoomTypeSkeleton from "@/components/sekleton/roomtype";
+import { apiRequest } from "@/lib/api";
+import type { RoomTypeResponse } from "@/types/room";
+import type { FacilityDetailResponse } from "@/types/facility";
+import Image from "next/image";
+import PageError from "../Error/PageError";
 
 interface Props {
-  accessToken: string
-  facilities: FacilityDetailResponse[]
-  baseUrl: string
+  accessToken: string;
+  facilities: FacilityDetailResponse[];
+  baseUrl: string;
 }
 
-export default function RoomsTypeContent({ accessToken, facilities, baseUrl }: Props) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedRoomType, setSelectedRoomType] = useState<RoomTypeResponse | undefined>(undefined)
-  const [roomTypes, setRoomTypes] = useState<RoomTypeResponse[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
-  const [roomTypeToDelete, setRoomTypeToDelete] = useState<RoomTypeResponse | null>(null)
+export default function RoomsTypeContent({
+  accessToken,
+  facilities,
+  baseUrl,
+}: Props) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRoomType, setSelectedRoomType] = useState<
+    RoomTypeResponse | undefined
+  >(undefined);
+  const [roomTypes, setRoomTypes] = useState<RoomTypeResponse[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [roomTypeToDelete, setRoomTypeToDelete] =
+    useState<RoomTypeResponse | null>(null);
 
   const fetchRoomTypes = useCallback(async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await apiRequest<RoomTypeResponse[]>({
         endpoint: "/roomtype",
@@ -35,128 +43,108 @@ export default function RoomsTypeContent({ accessToken, facilities, baseUrl }: P
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      })
-      console.log("Room types fetched successfully:", response)
-      setRoomTypes(response)
-      setError(null)
+      });
+      console.log("Room types fetched successfully:", response);
+      setRoomTypes(response);
+      setError(null);
     } catch (err) {
-      console.error("Error fetching room types:", err)
-      setError("Gagal memuat data tipe kamar")
+      console.error("Error fetching room types:", err);
+      setError("Gagal memuat data tipe kamar");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  } , [accessToken])
+  }, [accessToken]);
 
   useEffect(() => {
-    fetchRoomTypes()
-  }, [fetchRoomTypes])
+    fetchRoomTypes();
+  }, [fetchRoomTypes]);
 
   const [alert, setAlert] = useState({
     type: "success" as "success" | "error",
     message: "",
     isOpen: false,
-  })
+  });
 
-    const showAlert = (type: "success" | "error", message: string) => {
+  const showAlert = (type: "success" | "error", message: string) => {
     setAlert({
       type,
       message,
       isOpen: true,
-    })
-  }
+    });
+  };
   const handleAddClick = () => {
-    setSelectedRoomType(undefined)
-    setIsModalOpen(true)
-  }
+    setSelectedRoomType(undefined);
+    setIsModalOpen(true);
+  };
 
   const handleEditClick = (roomType: RoomTypeResponse) => {
-    setSelectedRoomType(roomType)
-    setIsModalOpen(true)
-  }
+    setSelectedRoomType(roomType);
+    setIsModalOpen(true);
+  };
 
   const handleDeleteClick = (roomType: RoomTypeResponse) => {
-    setRoomTypeToDelete(roomType)
-    setIsConfirmDialogOpen(true)
-  }
-
+    setRoomTypeToDelete(roomType);
+    setIsConfirmDialogOpen(true);
+  };
 
   const handleConfirmDelete = async () => {
-    if (!roomTypeToDelete) return
+    if (!roomTypeToDelete) return;
 
     try {
       await apiRequest({
         endpoint: `/roomtype/${roomTypeToDelete.id_roomtype}`,
         method: "DELETE",
-      })
+      });
 
       setAlert({
         type: "success",
         message: "Tipe kamar berhasil dihapus",
         isOpen: true,
-      })
-      fetchRoomTypes()
+      });
+      fetchRoomTypes();
     } catch (error) {
-      console.error("Error deleting room type:", error)
+      console.error("Error deleting room type:", error);
       setAlert({
         type: "error",
         message: "Gagal menghapus tipe kamar. Silakan coba lagi.",
         isOpen: true,
-      })
+      });
     } finally {
-      setIsConfirmDialogOpen(false)
-      setRoomTypeToDelete(null)
+      setIsConfirmDialogOpen(false);
+      setRoomTypeToDelete(null);
     }
-  }
-
-
-
-
+  };
 
   if (isLoading) {
-    return <RoomTypeSkeleton />
+    return <RoomTypeSkeleton />;
   }
 
   if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="text-red-500 mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-16 w-16"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <h3 className="text-xl font-medium text-gray-900 mb-2">{error}</h3>
-        <button
-          onClick={fetchRoomTypes}
-          className="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-        >
-          Coba Lagi
-        </button>
-      </div>
-    )
+    return <PageError error={"gagal memuat data"} onRefresh={fetchRoomTypes} />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-2xl font-bold text-gray-800">Tipe Kamar</h2>
-        <button
-          onClick={handleAddClick}
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Tambah Tipe Kamar
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={fetchRoomTypes}
+            className="flex items-center justify-center px-4 py-2 border rounded-lg hover:bg-gray-50"
+          >
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+            />
+            <span>{isLoading ? "Memuat..." : "Refresh"}</span>
+          </button>
+          <button
+            onClick={handleAddClick}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Tambah Tipe Kamar
+          </button>
+        </div>
       </div>
 
       {roomTypes.length === 0 ? (
@@ -177,8 +165,12 @@ export default function RoomsTypeContent({ accessToken, facilities, baseUrl }: P
               />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Belum ada tipe kamar</h3>
-          <p className="text-gray-500 mb-4">Tambahkan tipe kamar baru untuk mulai mengelola kamar Anda</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Belum ada tipe kamar
+          </h3>
+          <p className="text-gray-500 mb-4">
+            Tambahkan tipe kamar baru untuk mulai mengelola kamar Anda
+          </p>
           <button
             onClick={handleAddClick}
             className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg inline-flex items-center"
@@ -190,9 +182,12 @@ export default function RoomsTypeContent({ accessToken, facilities, baseUrl }: P
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {roomTypes.map((roomType) => {
-            const imageUrl = `${baseUrl}/${roomType.image}`
+            const imageUrl = `${baseUrl}/${roomType.image}`;
             return (
-              <div key={roomType.id_roomtype} className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div
+                key={roomType.id_roomtype}
+                className="bg-white rounded-xl shadow-sm overflow-hidden"
+              >
                 <div className="h-48 bg-gray-100 relative">
                   <div className="absolute top-3 left-3 bg-green-500 text-white px-3 py-1 rounded-lg font-medium z-10">
                     {roomType.room_type}
@@ -216,18 +211,22 @@ export default function RoomsTypeContent({ accessToken, facilities, baseUrl }: P
                 </div>
 
                 <div className="p-5">
-                  <h3 className="text-lg font-semibold text-gray-800">{roomType.room_type}</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {roomType.room_type}
+                  </h3>
 
                   {roomType.facility && roomType.facility.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {roomType.facility.slice(0, 3).map((facility, index: number) => (
-                        <span
-                          key={index}
-                          className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
-                        >
-                          {facility.facility_name || `Fasilitas ${index + 1}`}
-                        </span>
-                      ))}
+                      {roomType.facility
+                        .slice(0, 3)
+                        .map((facility, index: number) => (
+                          <span
+                            key={index}
+                            className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
+                          >
+                            {facility.facility_name || `Fasilitas ${index + 1}`}
+                          </span>
+                        ))}
                       {roomType.facility.length > 3 && (
                         <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
                           +{roomType.facility.length - 3} lainnya
@@ -237,7 +236,9 @@ export default function RoomsTypeContent({ accessToken, facilities, baseUrl }: P
                   )}
 
                   <div className="mt-4 flex justify-between items-center">
-                    <div className="text-green-600 font-bold">Rp {roomType.price.toLocaleString("id-ID")} / bulan</div>
+                    <div className="text-green-600 font-bold">
+                      Rp {roomType.price.toLocaleString("id-ID")} / bulan
+                    </div>
                     <div className="flex space-x-2">
                       <button
                         className="p-2 rounded-full hover:bg-gray-100"
@@ -257,7 +258,7 @@ export default function RoomsTypeContent({ accessToken, facilities, baseUrl }: P
                   </div>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       )}
@@ -290,5 +291,5 @@ export default function RoomsTypeContent({ accessToken, facilities, baseUrl }: P
         onClose={() => setAlert((prev) => ({ ...prev, isOpen: false }))}
       />
     </div>
-  )
+  );
 }

@@ -7,6 +7,7 @@ import ReportFilter from "@/components/dasbord/laporan/Filter"
 import ReportTable from "@/components/dasbord/laporan/Tabel"
 import ReportSkeleton from "@/components/sekleton/report"
 import AlertMessage from "../alert/alertMessage"
+import PageError from "../Error/PageError"
 
 
 interface ReportContentProps {
@@ -91,20 +92,7 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
   }
 
   if (error) {
-    return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-800">Laporan</h2>
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <div className="text-red-500 mb-2">⚠️ {error}</div>
-          <button
-            onClick={fetchReportData}
-            className="mt-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
-          >
-            Coba Lagi
-          </button>
-        </div>
-      </div>
-    )
+    return <PageError error={error} onRefresh={fetchReportData}/>
   }
 
   return (
@@ -113,6 +101,8 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
 
       <ReportFilter
         currentMonth={month}
+        onRefresh={fetchReportData}
+        isLoading={isLoading}
         onMonthChange={handleMonthChange}
         onSearch={handleSearch}
         searchQuery={searchQuery}

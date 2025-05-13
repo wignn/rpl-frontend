@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { ChevronDown, Search } from "lucide-react"
-import { getCurrentMonth } from "@/lib/utils/getMonth"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { ChevronDown, RefreshCw, Search } from "lucide-react";
+import { getCurrentMonth } from "@/lib/utils/getMonth";
 
 const months = [
   "January",
@@ -18,39 +18,50 @@ const months = [
   "October",
   "November",
   "December",
-]
+];
 
-const allMonths = [...months, "semua"]
+const allMonths = [...months, "semua"];
 
 interface ReportFilterProps {
-  currentMonth: string
-  onMonthChange: (month: string) => void
-  onSearch: (query: string) => void
-  searchQuery: string
+  currentMonth: string;
+  onMonthChange: (month: string) => void;
+  onSearch: (query: string) => void;
+  isLoading: boolean;
+  onRefresh: () => void;
+  searchQuery: string;
 }
 
-export default function ReportFilter({ currentMonth, onMonthChange, onSearch, searchQuery }: ReportFilterProps) {
-  const [selectedMonth, setSelectedMonth] = useState(currentMonth || getCurrentMonth())
-  const [searchInput, setSearchInput] = useState(searchQuery || "")
+export default function ReportFilter({
+  currentMonth,
+  isLoading,
+  onRefresh,
+  onMonthChange,
+  onSearch,
+  searchQuery,
+}: ReportFilterProps) {
+  const [selectedMonth, setSelectedMonth] = useState(
+    currentMonth || getCurrentMonth()
+  );
+  const [searchInput, setSearchInput] = useState(searchQuery || "");
 
   useEffect(() => {
-    setSearchInput(searchQuery || "")
-  }, [searchQuery])
+    setSearchInput(searchQuery || "");
+  }, [searchQuery]);
 
   const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const month = e.target.value
-    setSelectedMonth(month)
-    onMonthChange(month)
-  }
+    const month = e.target.value;
+    setSelectedMonth(month);
+    onMonthChange(month);
+  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(e.target.value)
-  }
+    setSearchInput(e.target.value);
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSearch(searchInput)
-  }
+    e.preventDefault();
+    onSearch(searchInput);
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6">
@@ -72,7 +83,10 @@ export default function ReportFilter({ currentMonth, onMonthChange, onSearch, se
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
           </div>
 
-          <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-auto">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="relative w-full sm:w-auto"
+          >
             <input
               type="text"
               placeholder="Cari laporan..."
@@ -80,16 +94,32 @@ export default function ReportFilter({ currentMonth, onMonthChange, onSearch, se
               onChange={handleSearchChange}
               className="pl-10 pr-4 py-2 rounded-full border border-gray-200 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
-            <button title="search" type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+            <button
+              title="search"
+              type="submit"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+            >
               <Search className="h-4 w-4" />
             </button>
           </form>
         </div>
+         <div className="flex gap-2">
+
+        <button
+          onClick={onRefresh}
+          className="flex items-center justify-center px-4 py-2 border rounded-lg hover:bg-gray-50"
+        >
+          <RefreshCw
+            className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+          />
+          <span>{isLoading ? "Memuat..." : "Refresh"}</span>
+        </button>
 
         <button className="rounded-full bg-white border border-gray-200 px-4 py-2 text-gray-800">
           Laporan fasilitas penyewa kos
         </button>
+        </div>
       </div>
     </div>
-  )
+  );
 }

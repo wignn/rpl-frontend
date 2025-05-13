@@ -1,44 +1,30 @@
 "use client"
 import Image from "next/image"
-import { RoomTypeResponse } from "@/types/room"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
+import type { RoomTypeResponse } from "@/types/room"
 
-function RoomTypeCard({ room, url }: { room: RoomTypeResponse; url: string }) {
-  const router = useRouter();
-  
-  const handleClick = (id: string) => {
-    router.push(`/view/${id}`)
-  }
-    return (
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 p-3">
-        <div className="relative h-48 bg-gray-200 rounded-lg">
-          <div className="absolute top-2 left-2 bg-green-300 text-green-800 px-2 py-0.5 rounded-md font-medium text-sm z-10">
+interface RoomTypeCardProps {
+  room: RoomTypeResponse & { room_type: string }
+  url: string
+}
+
+export default function RoomTypeCard({ room, url }: RoomTypeCardProps) {
+  return (
+    <Link href={`/view/${room.id_roomtype}`}>
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300 h-full flex flex-col">
+        <div className="relative w-full h-48 md:h-64 lg:h-80">
+          <Image src={`${url}/${room.image}`} alt={`Tipe ${room.room_type}`} fill className="object-cover" />
+          <div className="absolute top-3 left-3 bg-green-500 text-white px-2 py-1 rounded-md text-xs font-medium">
             Tipe {room.room_type}
           </div>
-          <Image
-            src={`${url}/${room.image}` || "/placeholder.svg?height=200&width=300"}
-            alt={`Tipe ${room.room_type}`}
-            fill
-            className="object-cover rounded-lg"
-          />
-          <div className="absolute bottom-2 right-2">
-            <button onClick={() => handleClick(room.id_roomtype)} title="x" className="cursor-pointer flex items-center justify-center bg-black text-white rounded-full w-8 h-8">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-4 h-4"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </button>
+        </div>
+        <div className="p-4 flex-1 flex flex-col">
+          <h3 className="font-semibold text-gray-800 mb-1">Kamar Tipe {room.room_type}</h3>
+          <div className="flex justify-between items-center">
+            <p className="font-bold text-gray-900">Rp {room.price.toLocaleString("id-ID")}</p>
           </div>
         </div>
       </div>
-    )
-  }
-  
-
-  export default RoomTypeCard
+    </Link>
+  )
+}

@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { Building2, Phone, Wifi, Droplets, Zap, Home, MapPin } from "lucide-react"
+import {Wifi, Droplets, Zap, Home, MapPin } from "lucide-react"
 import type { RoomTypeResponse } from "@/types/room"
 import Link from "next/link"
 import { useState } from "react"
@@ -149,17 +149,6 @@ export default function PropertyDetail({ roomType, url }: Props) {
                 Pesan Sekarang
               </button>
             </Link>
-
-            <div className="flex justify-between pt-4 border-t border-gray-100">
-              <button className="flex items-center text-gray-700 text-sm hover:text-green-600 transition-colors">
-                <Building2 className="w-4 h-4 mr-2" />
-                Info Properti
-              </button>
-              <button className="flex items-center text-gray-700 text-sm hover:text-green-600 transition-colors">
-                <Phone className="w-4 h-4 mr-2" />
-                Hubungi Pemilik
-              </button>
-            </div>
           </div>
         </div>
       </div>
