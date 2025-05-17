@@ -115,7 +115,7 @@ export default function RoomModal({
           ? "Gagal memperbarui kamar. Silakan coba lagi."
           : "Gagal menambahkan kamar baru. Silakan coba lagi."
       );
-      console.error("Error submitting form:", error);
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

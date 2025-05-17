@@ -93,7 +93,7 @@ export function EditStatusModal({
 
     } catch (error) {
       showAlert("error", "Gagal memperbarui status. Silakan coba lagi.")
-      console.error("Failed to update status:", error)
+      throw error
     } finally {
       setIsSubmitting(false)
     }

@@ -87,7 +87,7 @@ export default function RecordContent({
       });
       setTenants(result);
     } catch (error) {
-      console.error("Error fetching tenant data:", error);
+      throw error;
     } finally {
       setIsLoading(false);
     }

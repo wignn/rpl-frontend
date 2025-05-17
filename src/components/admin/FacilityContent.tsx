@@ -64,8 +64,8 @@ export default function FacilityContent({
       });
       setFacilities(response);
     } catch (error) {
-      console.error("Error fetching facilities:", error);
       setError("Gagal memuat data fasilitas. Silakan coba lagi.");
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -110,12 +110,13 @@ export default function FacilityContent({
 
       fetchFacilities();
     } catch (error) {
-      console.error("Error deleting facility:", error);
+      
       setAlert({
         type: "error",
         message: "Gagal menghapus fasilitas. Silakan coba lagi.",
         isOpen: true,
       });
+      throw error;
     } finally {
       setIsConfirmDialogOpen(false);
       setFacilityToDelete(null);

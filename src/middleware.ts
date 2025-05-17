@@ -24,7 +24,7 @@ export const middleware = async (req: NextRequest, res: NextResponse) => {
     }
   
     if (!isAdmin) {
-      return NextResponse.redirect(new URL("/not-found", req.url)); // Bisa custom halaman juga
+      return NextResponse.redirect(new URL("/not-found", req.url));
     }
   }
   

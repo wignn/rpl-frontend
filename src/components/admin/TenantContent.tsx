@@ -42,7 +42,7 @@ export default function UsersContent({ accessToken }: Props) {
       });
       setTenants(response);
     } catch (error) {
-      console.error("Error fetching tenants:", error);
+      throw error
     } finally {
       setIsLoading(false);
     }
@@ -82,8 +82,8 @@ export default function UsersContent({ accessToken }: Props) {
       showAlert("success", "Penghuni berhasil dihapus");
       fetchTenants();
     } catch (error) {
-      console.error("Error deleting tenant:", error);
       showAlert("error", "Gagal menghapus penghuni. Silakan coba lagi.");
+      throw error;
     } finally {
       setIsConfirmDialogOpen(false);
       setTenantToDelete(null);

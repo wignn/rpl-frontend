@@ -101,7 +101,8 @@ export function TransactionModal({ onClose, transaction, accessToken, showAlert,
           setTenants(tenantsData)
         }
       } catch (err) {
-        console.error("Error fetching tenant data:", err)
+        showAlert("error", "Gagal memuat data penyewa. Silakan coba lagi.")
+        throw err
       } finally {
         setIsLoading(false)
       }
@@ -206,8 +207,8 @@ export function TransactionModal({ onClose, transaction, accessToken, showAlert,
         showAlert("error", "Gagal menyimpan transaksi. Silakan coba lagi.")
       }
     } catch (err) {
-      console.error("Gagal menyimpan transaksi:", err)
       showAlert("error", "Terjadi kesalahan saat menyimpan transaksi.")
+      throw err
     }
   }
 

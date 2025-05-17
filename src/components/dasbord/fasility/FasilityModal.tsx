@@ -131,11 +131,11 @@ export default function FacilityModal({
         );
       }
     } catch (error) {
-      console.error("Error submitting form:", error);
       showAlert(
         "error",
         `Gagal ${isUpdateMode ? "memperbarui" : "menambahkan"} fasilitas.`
       );
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

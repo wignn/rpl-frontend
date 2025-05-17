@@ -44,12 +44,11 @@ export default function RoomsTypeContent({
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log("Room types fetched successfully:", response);
       setRoomTypes(response);
       setError(null);
-    } catch (err) {
-      console.error("Error fetching room types:", err);
+    } catch (error) {
       setError("Gagal memuat data tipe kamar");
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -103,12 +102,12 @@ export default function RoomsTypeContent({
       });
       fetchRoomTypes();
     } catch (error) {
-      console.error("Error deleting room type:", error);
       setAlert({
         type: "error",
         message: "Gagal menghapus tipe kamar. Silakan coba lagi.",
         isOpen: true,
       });
+      throw error;
     } finally {
       setIsConfirmDialogOpen(false);
       setRoomTypeToDelete(null);

@@ -63,7 +63,7 @@ export default function FinanceDashboard({accessToken}:{ accessToken: string}) {
           err instanceof Error ? err.message : String(err)
         }`
       );
-      console.error("Error fetching finance data:", err);
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -86,10 +86,6 @@ export default function FinanceDashboard({accessToken}:{ accessToken: string}) {
     .reduce((sum, item) => sum + item.amount, 0);
 
   const balance = totalIncome - totalOutcome;
-  console.log("Total Income:", totalIncome);
-  console.log("Total Outcome:", totalOutcome);
-  console.log("Balance:", balance);
-  console.log("Filtered Data:", filteredData);
 
   const handleEditTransaction = (transaction: FinanceDetailsResponse) => {
     setCurrentTransaction(transaction);

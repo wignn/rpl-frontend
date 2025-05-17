@@ -30,18 +30,16 @@ export async function apiRequest<T>({
   };
   try {
     const response = await fetch(`${baseUrl}${endpoint}`, config);
-
+    console.log("response", response);
     const responseBody = await response.json().catch(() => null);
-
     if (!response.ok) {
       const errorMessage = responseBody?.message || response.statusText;
-      console.error("API request error:", method, endpoint, errorMessage);
-      throw new Error(`Error ${response.status}: ${errorMessage}`);
+      console.log("errorMessage", errorMessage);
+      return null as unknown as T;
     }
 
     return responseBody as T;
   } catch (error) {
-    console.error("API request failed:", error);
     throw error;
   }
 }
@@ -70,13 +68,12 @@ export async function fileRequest<T>({
 
     if (!response.ok) {
       const errorMessage = responseBody?.message || response.statusText;
-      console.error("API request error:", method, endpoint, errorMessage);
       throw new Error(`Error ${response.status}: ${errorMessage}`);
     }
 
     return responseBody as T;
   } catch (error) {
-    console.error("API request failed:", error);
+
     throw error;
   }
 }

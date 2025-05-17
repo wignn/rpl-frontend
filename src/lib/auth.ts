@@ -43,8 +43,7 @@ async function refreshAccessToken(Token: JWT): Promise<any> {
       : Date.now() + 24 * 60 * 60 * 1000, 
     };
   } catch (error) {
-    console.error("Error in refreshAccessToken:", error);
-    return null;
+    throw error;
   }
 }
 

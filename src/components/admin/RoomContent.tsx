@@ -57,12 +57,12 @@ export default function RoomContent({ accessToken, roomtypes }: Props) {
 
       fetchRooms();
     } catch (error) {
-      console.error("Error deleting room type:", error);
       setAlert({
         type: "error",
         message: "Gagal menghapus tipe kamar. Silakan coba lagi.",
         isOpen: true,
       });
+      throw error;
     } finally {
       setIsConfirmDialogOpen(false);
       setSelectedRoom(undefined);
@@ -82,8 +82,8 @@ export default function RoomContent({ accessToken, roomtypes }: Props) {
       });
       setRooms(response);
     } catch (error) {
-      console.error("Error fetching rooms:", error);
       setError("Gagal memuat data kamar. Silakan coba lagi.");
+      throw error;
     } finally {
       setIsLoading(false);
     }

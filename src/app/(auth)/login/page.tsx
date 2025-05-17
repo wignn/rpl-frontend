@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 
 export default function Page() {
   const [showPassword, setShowPassword] = useState(false);
@@ -34,8 +35,8 @@ export default function Page() {
         }, 1500)
       }
     } catch (error) {
-      console.error("Error:", error);
       setError("Terjadi kesalahan, coba lagi.");
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -102,12 +103,12 @@ export default function Page() {
             )}
 
             <div className="text-right">
-              <a
-                href="#"
+              <Link
+                href="/reset-password"
                 className="text-black text-xs font-normal font-['Poppins'] underline"
               >
                 Lupa kata sandi?
-              </a>
+              </Link>
             </div>
 
             <button

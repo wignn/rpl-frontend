@@ -54,13 +54,12 @@ export default function ReportPage({
         setDesc("");
         setReportDate("");
       }
-      console.log("Report submitted:", response);
     } catch (error) {
       showAlert(
         "error",
         "Gagal mengirim laporan. Silakan coba lagi nanti."
       )
-      console.error("Error submitting report:", error);
+      throw error;
     } finally {
       setIsLoading(false);
     }

@@ -61,8 +61,8 @@ export default function ReportContent({ accessToken }: ReportContentProps) {
       })
       setReportData(result)
     } catch (error) {
-      console.error("Error fetching report data:", error)
       setError("Gagal memuat data laporan. Silakan coba lagi.")
+      throw error
     } finally {
       setIsLoading(false)
     }

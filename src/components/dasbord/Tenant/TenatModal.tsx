@@ -103,12 +103,11 @@ export default function TenantModal({
           if (response) {
             setRooms(response)
           } else {
-            console.error("Error fetching data:", response)
             showAlert("error", "Gagal memuat data kamar. Silakan coba lagi.")
           }
         } catch (error) {
-          console.error("Error fetching data:", error)
           showAlert("error", "Gagal memuat data kamar. Silakan coba lagi.")
+          throw error
         } finally {
           setIsLoading(false)
         }
@@ -128,7 +127,6 @@ export default function TenantModal({
         harga: selectedRoom ? selectedRoom.roomtype.price.toString() : "",
       }))
     } else if (name === "nomorTelepon") {
-      // Only allow numeric input for phone number
       if (value === "" || /^\d+$/.test(value)) {
         setFormData((prev) => ({
           ...prev,
@@ -136,7 +134,6 @@ export default function TenantModal({
         }))
       }
     } else if (name === "noKtp") {
-      // Only allow numeric input for KTP
       if (value === "" || /^\d+$/.test(value)) {
         setFormData((prev) => ({
           ...prev,
@@ -223,8 +220,8 @@ export default function TenantModal({
         showAlert("error", "Gagal menyimpan data penghuni. Silakan coba lagi.")
       }
     } catch (error) {
-      console.error("Error submitting form:", error)
       showAlert("error", "Gagal menyimpan data penghuni. Silakan coba lagi.")
+      throw error
     } finally {
       setIsSubmitting(false)
     }

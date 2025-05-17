@@ -28,10 +28,10 @@ async function page() {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-console.log("res", res);
+
     tenatId = res.id_tenant;
   } catch (error) {
-    console.log(error);
+    throw error;
   }
 
   return (

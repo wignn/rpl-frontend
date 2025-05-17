@@ -15,7 +15,7 @@ async function Page({ params }: { params:  Promise<{ id: string }> }) {
       method: "GET",
     })
   } catch (error) {
-    console.log("error fetching room type", error)
+    throw error
   }
 
   if (!roomType) {

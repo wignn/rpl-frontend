@@ -22,8 +22,8 @@ async function page() {
       },
     })
   }
-  }catch(e){
-    console.log("Error fetching data:", e);
+  }catch(error){
+    throw error;
   }
   
   return (

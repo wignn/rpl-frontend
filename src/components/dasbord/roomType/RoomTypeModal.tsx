@@ -203,9 +203,8 @@ export default function RoomTypeModal({
       setUploadedImageUrl(response.path);
       return response.path;
     } catch (error) {
-      console.error("Error uploading image:", error);
       showAlert("error", "Gagal mengunggah gambar. Silakan coba lagi.");
-      return null;
+      throw error;
     } finally {
       setIsUploading(false);
     }
@@ -253,8 +252,7 @@ export default function RoomTypeModal({
               method: "DELETE",
             });
           } catch (error) {
-            console.error("Error deleting old image:", error);
-            // Continue with update even if image deletion fails
+            throw error;
           }
         }
 
@@ -282,13 +280,13 @@ export default function RoomTypeModal({
         onClose();
       }
     } catch (error) {
-      console.error("Error submitting form:", error);
       showAlert(
         "error",
         `Gagal ${
           isUpdateMode ? "memperbarui" : "menambahkan"
         } tipe kamar. Silakan coba lagi.`
       );
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

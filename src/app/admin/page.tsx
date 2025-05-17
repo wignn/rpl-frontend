@@ -102,7 +102,7 @@ export default async function Home() {
       roomtype = roomtypes;
     }
   } catch (error) {
-    console.error("Error fetching user data:", error);
+    throw error;
   }
 
   return (
